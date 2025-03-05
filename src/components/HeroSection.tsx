@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import '../styles/HeroSection.css';
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onContentView: (category?: string) => void;
+}
+
+const HeroSection = ({ onContentView }: HeroSectionProps) => {
   const [typedText, setTypedText] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const fullText = '> exploring the intersection of human creativity and artificial intelligence';
+  const fullText = '> exploring human x machine creativity';
   const asciiArt = `
   ╔══════════════════╗
   ║   CaffeineBrain  ║
@@ -41,12 +45,17 @@ const HeroSection = () => {
     setSelectedTag(null);
   };
 
+  const [showContent, setShowContent] = useState(false);
+
   return (
     <section className="hero-section">
       <div className="hero-content">
         <pre className="ascii-art">{asciiArt}</pre>
         <div className="terminal">
-          <p className="typed-text">{typedText}<span className="cursor">_</span></p>
+          <div className="fixed-width-container">
+            <p className="typed-text">{typedText}</p>
+            <span className="cursor" />
+          </div>
         </div>
         
         <div className="topics-container">
@@ -57,6 +66,7 @@ const HeroSection = () => {
                 className={`topic-wrapper ${selectedTag === tag.id ? 'active' : ''}`}
                 onMouseEnter={() => handleTagHover(tag.id)}
                 onMouseLeave={handleTagLeave}
+                onClick={() => onContentView(tag.id)}
               >
                 <span className="topic">{tag.name}</span>
                 <div className="topic-description">
@@ -71,7 +81,7 @@ const HeroSection = () => {
           <button onClick={() => document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' })}>
             explore.brain()
           </button>
-          <button onClick={() => document.getElementById('blog')?.scrollIntoView({ behavior: 'smooth' })}>
+          <button onClick={() => onContentView()}>
             browse.content()
           </button>
         </div>

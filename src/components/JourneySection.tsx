@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import '../styles/JourneySection.css';
 
@@ -106,8 +106,19 @@ const codeVariants = {
   }
 };
 
-const JourneySection = () => {
+interface JourneySectionProps {
+  onContentView: (category?: string) => void;
+}
+
+const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
   const sectionRef = useRef<HTMLElement>(null);
+  const [isNavigationEnabled, setIsNavigationEnabled] = useState(true);
+
+  const handleStepClick = (stepId: string) => {
+    if (isNavigationEnabled) {
+      onContentView(stepId);
+    }
+  };
 
   return (
     <section id="journey" ref={sectionRef} className="journey-section">
@@ -119,7 +130,20 @@ const JourneySection = () => {
         transition={{ duration: 0.6 }}
       >
         <h2 className="journey-title">brain.map()</h2>
-        <p className="journey-subtitle">traverse(neural_pathways) => knowledge</p>
+        <p className="journey-subtitle">traverse(neural_pathways) ={'>'} knowledge</p>
+        <div className="navigation-toggle">
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={isNavigationEnabled}
+              onChange={(e) => setIsNavigationEnabled(e.target.checked)}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+          <span className="toggle-label">
+            navigation.{isNavigationEnabled ? 'enabled()' : 'disabled()'}
+          </span>
+        </div>
       </motion.div>
       
       <motion.div 
@@ -132,8 +156,9 @@ const JourneySection = () => {
         {steps.map((step, index) => (
           <motion.div
             key={step.id}
-            className="journey-step"
+            className={`journey-step ${isNavigationEnabled ? 'clickable' : ''}`}
             variants={stepVariants}
+            onClick={() => handleStepClick(step.id)}
           >
             <div className="step-content">
               <h3 className="step-title">{step.title}</h3>
@@ -167,7 +192,7 @@ const JourneySection = () => {
         viewport={{ once: true }}
         transition={{ delay: 0.8 }}
       >
-        <button onClick={() => document.getElementById('blog')?.scrollIntoView({ behavior: 'smooth' })}>
+        <button onClick={() => onContentView()}>
           explore.articles()
         </button>
       </motion.div>

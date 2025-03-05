@@ -1,10 +1,14 @@
 .journey-section {
   min-height: 100vh;
+  width: 1200px;
+  margin: 0 auto;
   padding: 4rem 2rem;
   background-color: var(--color-black);
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: var(--color-white);
+  position: relative;
 }
 
 .journey-intro {
@@ -126,25 +130,108 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1280px) {
   .journey-section {
-    padding: 2rem 1rem;
-  }
-
-  .journey-step {
-    flex-direction: column !important;
-    padding: 1.5rem;
-    gap: 1.5rem;
-  }
-
-  .step-ascii {
     width: 100%;
-    min-width: 0;
-    font-size: 0.8rem;
-    overflow-x: auto;
+    max-width: 1200px;
   }
+}
 
-  .step-code {
-    font-size: 0.8rem;
-  }
+.navigation-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-gray-800);
+  transition: .4s;
+  border-radius: 30px;
+  border: 1px solid var(--color-gray-700);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--color-gray-300);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--color-gray-700);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(29px);
+  background-color: var(--color-white);
+}
+
+.toggle-label {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-gray-400);
+}
+
+.journey-step.clickable {
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.journey-step.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.journey-step.clickable:hover .step-title {
+  color: var(--color-white);
+}
+
+.journey-step.clickable:hover .step-ascii {
+  color: var(--color-gray-300);
+}
+
+.back-button {
+  position: fixed;
+  left: 2rem;
+  top: 2rem;
+  background: none;
+  border: 1px solid var(--color-gray-700);
+  color: var(--color-gray-300);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.back-button:hover {
+  border-color: var(--color-white);
+  color: var(--color-white);
 } 
