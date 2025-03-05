@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import '../styles/JourneySection.css';
+
+interface JourneySectionProps {
+  onContentView: (category?: string) => void;
+}
 
 interface JourneyStep {
   id: string;
@@ -105,10 +109,6 @@ const codeVariants = {
     }
   }
 };
-
-interface JourneySectionProps {
-  onContentView: (category?: string) => void;
-}
 
 const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
   const sectionRef = useRef<HTMLElement>(null);

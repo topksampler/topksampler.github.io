@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
-import { MarkdownRenderer } from './MarkdownRenderer';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 import { watchContent, ContentData } from '../utils/contentLoader';
 import '../styles/ContentBrowser.css';
 
@@ -622,8 +626,9 @@ const TerminalHeader: React.FC<{ title: string }> = ({ title }) => (
 );
 
 const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articleId, onBack }) => {
-  const { category } = useParams();
+  const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedArticle, setSelectedArticle] = useState<ContentData | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(category || initialCategory);
   const [content, setContent] = useState<ContentData[]>([]);
@@ -669,12 +674,20 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
     navigate(`/content/${article.category}/${article.id}`);
   };
 
-  const handleClose = () => {
-    setSelectedArticle(null);
-    if (selectedCategory) {
-      navigate(`/content/${selectedCategory}`);
+  const handleBack = () => {
+    if (location.pathname.includes('/content/')) {
+      const pathParts = location.pathname.split('/');
+      if (pathParts.length > 3) {
+        // If we're in an article, go back to the category
+        navigate(`/content/${pathParts[2]}`);
+        setSelectedArticle(null);
+      } else {
+        // If we're in a category, go back to all content
+        navigate('/content');
+        setSelectedCategory(null);
+      }
     } else {
-      navigate('/content');
+      navigate('/');
     }
   };
 
@@ -691,6 +704,167 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
   const filteredContent = selectedCategory
     ? content.filter(item => item.category === selectedCategory)
     : content;
+
+  const renderMarkdown = (content: string) => {
+    return (
+      <div className="markdown-content">
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw]}
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code({node, inline, className, children, ...props}) {
+              const match = /language-(\w+)/.exec(className || '');
+              const language = match ? match[1] : '';
+              
+              if (!inline && language) {
+                return (
+                  <SyntaxHighlighter
+                    className="syntax-highlighter"
+                    language={language}
+                    style={atomDark}
+                    customStyle={{
+                      background: 'rgba(0, 0, 0, 0.4)',
+                      margin: '2em -2rem',
+                      padding: '1.5rem 2rem',
+                    }}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                );
+              }
+              return <code className={className} {...props}>{children}</code>;
+            },
+            // Add custom heading components with animations
+            h1: ({children}) => (
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {children}
+              </motion.h1>
+            ),
+            h2: ({children}) => (
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                {children}
+              </motion.h2>
+            ),
+            // Add custom paragraph component with animations
+            p: ({children}) => (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {children}
+              </motion.p>
+            ),
+            // Add custom blockquote component with animations
+            blockquote: ({children}) => (
+              <motion.blockquote
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {children}
+              </motion.blockquote>
+            ),
+            // Add custom image component with animations
+            img: ({src, alt}) => (
+              <motion.img
+                src={src}
+                alt={alt}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
+  const renderArticle = (article: ContentData) => {
+    // Convert article content to markdown string
+    const markdownContent = `
+${article.content.intro}
+
+${article.content.sections.map(section => `
+## ${section.title}
+
+${section.content}
+
+${section.code ? `\`\`\`typescript
+${section.code}
+\`\`\`` : ''}
+`).join('\n')}
+
+${article.content.conclusion ? `
+## Conclusion
+
+${article.content.conclusion}` : ''}
+`;
+
+    return (
+      <motion.div
+        key="article-view"
+        className="article-view"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="article-container">
+          <motion.pre 
+            className="article-ascii"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {article.ascii}
+          </motion.pre>
+          
+          <motion.h1 
+            className="article-title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {article.title}
+          </motion.h1>
+          
+          <motion.div 
+            className="article-meta"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <span>{new Date(article.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })}</span>
+            <span>{article.readingTime}</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            {renderMarkdown(markdownContent)}
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -711,15 +885,15 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
   return (
     <motion.div 
       className="content-browser"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
       <MatrixRain />
       <motion.button
         className="back-button"
-        onClick={onBack}
+        onClick={handleBack}
         whileHover={{ scale: 1.05, x: -5 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, x: -20 }}
@@ -729,162 +903,95 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
         cd ..
       </motion.button>
 
-      <motion.div 
-        className="browser-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <pre className="ascii-header">
-          {`
+      <AnimatePresence mode="wait">
+        {!selectedArticle ? (
+          <motion.div
+            key="content-grid"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div 
+              className="browser-header"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <pre className="ascii-header">
+                {`
    _____ _    ____ ____ _____ ___ _   _ _____ 
   | ____| |  / ___|  _ \\_   _|_ _| \\ | | ____|
   |  _| | | | |   | |_) || |  | ||  \\| |  _|  
   | |___| |_| |___|  _ < | |  | || |\\  | |___ 
   |_____|____\\____|_| \\_\\|_| |___|_| \\_|_____|
-          `}
-        </pre>
-      </motion.div>
-
-      <motion.div 
-        className="category-filters"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <motion.button
-          key="category-all"
-          className={`category-btn ${!selectedCategory ? 'active' : ''}`}
-          onClick={() => handleCategoryClick(null)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          All
-        </motion.button>
-        {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat) => (
-          <motion.button
-            key={`category-${cat}`}
-            className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
-            onClick={() => handleCategoryClick(cat)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {cat}
-          </motion.button>
-        ))}
-      </motion.div>
-
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key="categories-grid"
-          className="categories-grid"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          {filteredContent.map((article) => (
-            <motion.div
-              key={`${article.id}-category-card`}
-              className={`category-card ${article.category}`}
-              variants={cardVariants}
-              whileHover="hover"
-              onClick={() => handleCardClick(article)}
-            >
-              <TerminalHeader title={article.title} />
-              <pre className="category-ascii">{article.ascii}</pre>
-              <p className="category-description">{article.description}</p>
-              <div className="card-terminal-footer">
-                <span className="card-prompt">$</span>
-                <span className="card-meta">
-                  {new Date(article.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })} • {article.readingTime}
-                </span>
-                <span className="card-cursor">█</span>
-              </div>
+                `}
+              </pre>
             </motion.div>
-          ))}
-        </motion.div>
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {selectedArticle && (
-          <motion.div 
-            key="modal-overlay"
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="article-modal"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            <motion.div 
+              className="category-filters"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
               <motion.button
-                className="close-button"
-                onClick={handleClose}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                key="category-all"
+                className={`category-btn ${!selectedCategory ? 'active' : ''}`}
+                onClick={() => handleCategoryClick(null)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                exit()
+                All
               </motion.button>
-              <pre className="modal-ascii">{selectedArticle.ascii}</pre>
-              <h2>{selectedArticle.title}</h2>
-              <div className="modal-meta">
-                <span>
-                  {new Date(selectedArticle.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </span>
-                <span>{selectedArticle.readingTime}</span>
-              </div>
-              <div className="article-content">
-                <p className="article-intro">{selectedArticle.content.intro}</p>
-                {selectedArticle.content.sections.map((section: Section, index: number) => (
-                  <motion.div 
-                    key={`${selectedArticle.id}-section-${section.title}`}
-                    className="article-section"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <h3>{section.title}</h3>
-                    <p>{section.content}</p>
-                    {section.code && (
-                      <motion.div 
-                        key={`${selectedArticle.id}-section-${section.title}-code`}
-                        className="code-block"
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 + 0.2 }}
-                      >
-                        <pre><code className="language-python">{section.code}</code></pre>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                ))}
-                {selectedArticle.content.conclusion && (
-                  <motion.div 
-                    className="article-conclusion"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <h3>Conclusion</h3>
-                    <p>{selectedArticle.content.conclusion}</p>
-                  </motion.div>
-                )}
-              </div>
+              {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat) => (
+                <motion.button
+                  key={`category-${cat}`}
+                  className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
+                  onClick={() => handleCategoryClick(cat)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {cat}
+                </motion.button>
+              ))}
+            </motion.div>
+
+            <motion.div 
+              className="categories-grid"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {filteredContent.map((article) => (
+                <motion.div
+                  key={`${article.id}-category-card`}
+                  className={`category-card ${article.category}`}
+                  variants={cardVariants}
+                  whileHover="hover"
+                  onClick={() => handleCardClick(article)}
+                >
+                  <TerminalHeader title={article.title} />
+                  <pre className="category-ascii">{article.ascii}</pre>
+                  <p className="category-description">{article.description}</p>
+                  <div className="card-terminal-footer">
+                    <span className="card-prompt">$</span>
+                    <span className="card-meta">
+                      {new Date(article.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })} • {article.readingTime}
+                    </span>
+                    <span className="card-cursor">█</span>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
           </motion.div>
+        ) : (
+          renderArticle(selectedArticle)
         )}
       </AnimatePresence>
     </motion.div>

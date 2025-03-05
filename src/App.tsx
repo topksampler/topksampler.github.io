@@ -17,15 +17,19 @@ function App() {
   }
 
   const handleBack = () => {
-    if (location.pathname.includes('/content/')) {
-      // If we're in an article view, go back to the category
-      if (location.pathname.split('/').length > 3) {
-        navigate(`/content/${location.pathname.split('/')[2]}`);
-      } else {
-        navigate('/content');
-      }
-    } else {
-      navigate('/');
+    const pathParts = location.pathname.split('/');
+    
+    // If we're in an article view (e.g., /content/category/article)
+    if (pathParts.length > 3) {
+      navigate(`/content/${pathParts[2]}`); // Go back to category view
+    }
+    // If we're in a category view (e.g., /content/category)
+    else if (pathParts.length === 3) {
+      navigate('/content'); // Go back to all content
+    }
+    // If we're in the main content view
+    else if (location.pathname === '/content') {
+      navigate('/'); // Go back to home
     }
   }
 
@@ -48,14 +52,14 @@ function App() {
           } />
           <Route path="/content/:category" element={
             <ContentBrowser 
-              initialCategory={location.pathname.split('/').pop() || null}
+              initialCategory={location.pathname.split('/')[2] || null}
               onBack={handleBack}
             />
           } />
           <Route path="/content/:category/:articleId" element={
             <ContentBrowser 
               initialCategory={location.pathname.split('/')[2] || null}
-              articleId={location.pathname.split('/').pop() || null}
+              articleId={location.pathname.split('/')[3] || null}
               onBack={handleBack}
             />
           } />

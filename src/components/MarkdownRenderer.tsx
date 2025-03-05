@@ -33,12 +33,48 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onL
               </code>
             );
           },
-          ul: ({ node, ...props }) => <ul className="md-ul" {...props} />,
+          ul: ({ node, className, ...props }) => {
+            const isTaskList = className?.includes('contains-task-list');
+            return (
+              <ul 
+                className={isTaskList ? 'md-task-list' : 'md-ul'}
+                {...props}
+              />
+            );
+          },
           ol: ({ node, ...props }) => <ol className="md-ol" {...props} />,
-          li: ({ node, ...props }) => <li className="md-li" {...props} />,
-          blockquote: ({ node, ...props }) => <blockquote className="md-blockquote" {...props} />,
+          li: ({ node, className, ...props }) => {
+            const isTaskListItem = className?.includes('task-list-item');
+            return (
+              <li 
+                className={isTaskListItem ? 'md-task-list-item' : 'md-li'}
+                {...props}
+              />
+            );
+          },
+          blockquote: ({ node, ...props }) => {
+            // Check if this is a callout by looking for special syntax
+            const text = props.children?.[0]?.props?.children?.[0] || '';
+            const calloutMatch = text.match(/^!(info|warning|error|success)\s/);
+            
+            if (calloutMatch) {
+              const type = calloutMatch[1];
+              // Remove the callout syntax from the text
+              props.children[0].props.children[0] = text.replace(/^!(info|warning|error|success)\s/, '');
+              return <blockquote className={`md-callout ${type}`} {...props} />;
+            }
+            
+            // Check if this is a note
+            if (text.startsWith('Note: ')) {
+              props.children[0].props.children[0] = text.replace(/^Note:\s/, '');
+              return <blockquote className="md-note" {...props} />;
+            }
+            
+            return <blockquote className="md-blockquote" {...props} />;
+          },
           a: ({ node, ...props }) => (
             <a
+              className="md-a"
               {...props}
               onClick={(e) => {
                 e.preventDefault();
@@ -53,7 +89,13 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, onL
           hr: ({ node, ...props }) => <hr className="md-hr" {...props} />,
           table: ({ node, ...props }) => <table className="md-table" {...props} />,
           th: ({ node, ...props }) => <th className="md-th" {...props} />,
-          td: ({ node, ...props }) => <td className="md-td" {...props} />
+          td: ({ node, ...props }) => <td className="md-td" {...props} />,
+          dl: ({ node, ...props }) => <dl className="md-dl" {...props} />,
+          dt: ({ node, ...props }) => <dt className="md-dt" {...props} />,
+          dd: ({ node, ...props }) => <dd className="md-dd" {...props} />,
+          kbd: ({ node, ...props }) => <kbd className="md-kbd" {...props} />,
+          sub: ({ node, ...props }) => <sub className="md-sub" {...props} />,
+          sup: ({ node, ...props }) => <sup className="md-sup" {...props} />
         }}
       >
         {content}
