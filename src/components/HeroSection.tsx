@@ -13,11 +13,10 @@ const HeroSection = () => {
   `;
 
   const tags = [
-    { id: 'mlp', name: 'MLPs', desc: 'Multi-Layer Perceptrons: The Neural Building Blocks' },
-    { id: 'transformer', name: 'Transformers', desc: 'Attention Is All You Need' },
-    { id: 'neural', name: 'Neural Networks', desc: 'Biological Intelligence Inspired' },
-    { id: 'deep', name: 'Deep Learning', desc: 'Going Deeper Into The Unknown' },
-    { id: 'ethics', name: 'AI Ethics', desc: 'Responsible Innovation' }
+    { id: 'concepts', name: 'Concepts', desc: 'Deep Dives into AI/ML Theory' },
+    { id: 'tutorials', name: 'Tutorials', desc: 'From Theory to Production' },
+    { id: 'projects', name: 'Projects', desc: 'Open Source AI Adventures' },
+    { id: 'thoughts', name: 'Thoughts', desc: 'Neural Musings && Human Insights' }
   ];
 
   useEffect(() => {
@@ -70,10 +69,10 @@ const HeroSection = () => {
 
         <div className="navigation-buttons">
           <button onClick={() => document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth' })}>
-            start.journey()
+            explore.brain()
           </button>
           <button onClick={() => document.getElementById('blog')?.scrollIntoView({ behavior: 'smooth' })}>
-            read.blog()
+            browse.content()
           </button>
         </div>
 

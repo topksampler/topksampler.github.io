@@ -39,13 +39,17 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   padding: 2rem;
   background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.journey-step:hover {
+  border-color: var(--color-gray-700);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .journey-step:nth-child(even) {
@@ -75,6 +79,22 @@
   line-height: 1.6;
 }
 
+.step-code {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--color-gray-800);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-gray-300);
+  overflow-x: auto;
+  border-left: 2px solid var(--color-gray-700);
+}
+
+.step-code code {
+  white-space: pre;
+}
+
 .step-ascii {
   font-family: var(--font-mono);
   white-space: pre;
@@ -85,6 +105,8 @@
   background-color: var(--color-gray-800);
   border-radius: 4px;
   min-width: 200px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .journey-cta {
@@ -120,5 +142,9 @@
     min-width: 0;
     font-size: 0.8rem;
     overflow-x: auto;
+  }
+
+  .step-code {
+    font-size: 0.8rem;
   }
 } 

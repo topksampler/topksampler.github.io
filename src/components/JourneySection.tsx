@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import '../styles/JourneySection.css';
 
 interface JourneyStep {
@@ -6,117 +7,170 @@ interface JourneyStep {
   title: string;
   content: string;
   ascii: string;
+  code?: string;
 }
 
 const steps: JourneyStep[] = [
   {
-    id: 'future',
-    title: 'The Future is Now',
-    content: 'AI isn\'t just coming - it\'s here. Understanding AI isn\'t optional anymore; it\'s becoming as fundamental as digital literacy was in the past decades.',
+    id: 'concepts',
+    title: 'model.train()',
+    content: 'Dive deep into neural architectures. From backprop to attention mechanisms, we\'ll optimize your learning rate.',
     ascii: `
-    ╭───────────╮
-    │  20XX     │
-    │    ▲      │
-    │ YOU ARE   │
-    │   HERE    │
-    ╰───────────╯
-    `
+    ┌───────────┐
+    │ℒ = ∑ℒᵢ/n │
+    │[▓▓▓▓░░░░]│
+    │epoch: 42 │
+    └───────────┘
+    `,
+    code: 'accuracy = model.fit(X_train, y_train, epochs=42)'
   },
   {
-    id: 'empowerment',
-    title: 'Personal Empowerment',
-    content: 'Knowledge of AI empowers you to make informed decisions, understand its capabilities and limitations, and harness its potential for your own growth.',
+    id: 'tutorials',
+    title: 'model.deploy()',
+    content: 'Transform theory into production-ready code. Each tutorial is version controlled and tested against reality.',
     ascii: `
-      ╱|\\
-    ╱__|_\\
-    │ AI │
-    │YOU │
-    ‾‾‾‾‾
-    `
+    ┌──────────┐
+    │git push  │
+    │├─MLOps──┤│
+    │└─CI/CD──┘│
+    │[✓]ready  │
+    └──────────┘
+    `,
+    code: 'docker run -d caffeine-brain:latest'
   },
   {
-    id: 'creativity',
-    title: 'Augmented Creativity',
-    content: 'AI isn\'t here to replace human creativity - it\'s here to augment it. Learn how to dance with algorithms and create something truly unique.',
+    id: 'projects',
+    title: 'github.commit()',
+    content: 'Open source projects where algorithms meet real problems. PRs welcome, bugs expected, learning guaranteed.',
     ascii: `
-    ╭─╮ ╭─╮
-    │H│~│A│
-    │U│~│I│
-    ╰─╯ ╰─╯
-    SYNERGY
-    `
+    ┌─────────┐
+    │ ⎇ main  │
+    │ └→feat  │
+    │   └→fix │
+    └─────────┘
+    `,
+    code: 'git checkout -b feature/neural-magic'
   },
   {
-    id: 'responsibility',
-    title: 'Ethical Responsibility',
-    content: 'As AI becomes more prevalent, understanding its ethical implications becomes crucial. Be part of the conversation that shapes its future.',
+    id: 'thoughts',
+    title: 'brain.think()',
+    content: 'Where silicon meets neurons. Exploring the space between mathematical elegance and biological chaos.',
     ascii: `
-    ╔════════╗
-    ║ ETHICS ║
-    ║  ┌─┐   ║
-    ║  │A│   ║
-    ║  │I│   ║
-    ║  └─┘   ║
-    ╚════════╝
-    `
+    ╭─────────╮
+    │δ(∂L/∂w) │
+    │ ⟨ϕ|ψ⟩   │
+    │ℝⁿ → ℝᵐ  │
+    ╰─────────╯
+    `,
+    code: 'consciousness = undefined'
   }
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3
+    }
+  }
+};
+
+const stepVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 50,
+    filter: 'blur(10px)'
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 12
+    }
+  }
+};
+
+const codeVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { 
+    opacity: 1, 
+    x: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100
+    }
+  }
+};
+
 const JourneySection = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const stepsRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    stepsRef.current.forEach((step) => {
-      if (step) observer.observe(step);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const setStepRef = (el: HTMLDivElement | null, index: number) => {
-    stepsRef.current[index] = el;
-  };
 
   return (
     <section id="journey" ref={sectionRef} className="journey-section">
-      <div className="journey-intro">
-        <h2 className="journey-title">Why AI Matters</h2>
-        <p className="journey-subtitle">Understanding the path forward in an AI-driven world</p>
-      </div>
+      <motion.div 
+        className="journey-intro"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className="journey-title">brain.map()</h2>
+        <p className="journey-subtitle">traverse(neural_pathways) => knowledge</p>
+      </motion.div>
       
-      <div className="journey-steps">
+      <motion.div 
+        className="journey-steps"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+      >
         {steps.map((step, index) => (
-          <div
+          <motion.div
             key={step.id}
-            ref={(el) => setStepRef(el, index)}
             className="journey-step"
+            variants={stepVariants}
           >
             <div className="step-content">
               <h3 className="step-title">{step.title}</h3>
               <p className="step-description">{step.content}</p>
+              {step.code && (
+                <motion.div 
+                  className="step-code"
+                  variants={codeVariants}
+                >
+                  <code>{step.code}</code>
+                </motion.div>
+              )}
             </div>
-            <pre className="step-ascii">{step.ascii}</pre>
-          </div>
+            <motion.pre 
+              className="step-ascii"
+              whileHover={{ 
+                scale: 1.05,
+                transition: { type: "spring", stiffness: 300 }
+              }}
+            >
+              {step.ascii}
+            </motion.pre>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="journey-cta">
+      <motion.div 
+        className="journey-cta"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.8 }}
+      >
         <button onClick={() => document.getElementById('blog')?.scrollIntoView({ behavior: 'smooth' })}>
           explore.articles()
         </button>
-      </div>
+      </motion.div>
     </section>
   );
 };
