@@ -1,0 +1,124 @@
+.journey-section {
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  background-color: var(--color-black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.journey-intro {
+  text-align: center;
+  margin-bottom: 4rem;
+  opacity: 0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.journey-title {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 1rem;
+  color: var(--color-white);
+}
+
+.journey-subtitle {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--color-gray-400);
+}
+
+.journey-steps {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  padding: 2rem;
+  background-color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
+  border-radius: 4px;
+}
+
+.journey-step:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.journey-step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  margin-bottom: 1rem;
+  color: var(--color-white);
+}
+
+.step-description {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+}
+
+.step-ascii {
+  font-family: var(--font-mono);
+  white-space: pre;
+  color: var(--color-gray-300);
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  line-height: 1.2;
+  padding: 1rem;
+  background-color: var(--color-gray-800);
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.journey-cta {
+  margin-top: 4rem;
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .journey-section {
+    padding: 2rem 1rem;
+  }
+
+  .journey-step {
+    flex-direction: column !important;
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .step-ascii {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.8rem;
+    overflow-x: auto;
+  }
+} 
