@@ -921,4 +921,19 @@
 .category-card.concepts:hover { border-color: rgba(0, 255, 255, 0.6); }
 .category-card.tutorials:hover { border-color: rgba(255, 140, 0, 0.6); }
 .category-card.projects:hover { border-color: rgba(255, 0, 255, 0.6); }
-.category-card.thoughts:hover { border-color: rgba(0, 255, 0, 0.6); } 
+.category-card.thoughts:hover { border-color: rgba(0, 255, 0, 0.6); }
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--color-red-500);
+  font-family: var(--font-mono);
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 2rem;
+} 

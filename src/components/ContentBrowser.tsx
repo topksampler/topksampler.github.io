@@ -5,6 +5,18 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 import { watchContent, ContentData } from '../utils/contentLoader';
 import '../styles/ContentBrowser.css';
 
+interface ContentBrowserProps {
+  initialCategory: string | null;
+  articleId?: string | null;
+  onBack: () => void;
+}
+
+interface Section {
+  title: string;
+  content: string;
+  code?: string;
+}
+
 interface ContentNode {
   id: string;
   title: string;
@@ -509,11 +521,6 @@ const modalVariants = {
   }
 };
 
-interface ContentBrowserProps {
-  initialCategory: string | null;
-  onBack: () => void;
-}
-
 const conceptsAscii = `
 ┌──────────────┐
 │ ▄▄▄▄▄▄▄▄▄▄▄ │
@@ -614,31 +621,61 @@ const TerminalHeader: React.FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
-const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack }) => {
+const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articleId, onBack }) => {
   const { category } = useParams();
   const navigate = useNavigate();
   const [selectedArticle, setSelectedArticle] = useState<ContentData | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(category || initialCategory);
   const [content, setContent] = useState<ContentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    watchContent((newContent) => {
-      setContent(newContent);
-      setIsLoading(false);
-    });
+    const loadContent = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await watchContent((newContent) => {
+          setContent(newContent);
+          setIsLoading(false);
+        });
+      } catch (err) {
+        setError('Failed to load content. Please try again later.');
+        setIsLoading(false);
+      }
+    };
+
+    loadContent();
   }, []);
 
   useEffect(() => {
     setSelectedCategory(category || initialCategory);
   }, [category, initialCategory]);
 
+  useEffect(() => {
+    if (articleId && content.length > 0) {
+      const article = content.find(item => item.id === articleId);
+      if (article) {
+        setSelectedArticle(article);
+      } else {
+        setError(`Article "${articleId}" not found`);
+        navigate('/content');
+      }
+    }
+  }, [articleId, content, navigate]);
+
   const handleCardClick = (article: ContentData) => {
     setSelectedArticle(article);
+    navigate(`/content/${article.category}/${article.id}`);
   };
 
   const handleClose = () => {
     setSelectedArticle(null);
+    if (selectedCategory) {
+      navigate(`/content/${selectedCategory}`);
+    } else {
+      navigate('/content');
+    }
   };
 
   const handleCategoryClick = (newCategory: string | null) => {
@@ -659,6 +696,14 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
     return (
       <div className="content-browser">
         <div className="loading">Loading content...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="content-browser">
+        <div className="error">{error}</div>
       </div>
     );
   }
@@ -708,6 +753,7 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
         transition={{ delay: 0.3 }}
       >
         <motion.button
+          key="category-all"
           className={`category-btn ${!selectedCategory ? 'active' : ''}`}
           onClick={() => handleCategoryClick(null)}
           whileHover={{ scale: 1.05 }}
@@ -715,21 +761,22 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
         >
           All
         </motion.button>
-        {['concepts', 'tutorials', 'projects', 'thoughts'].map((category) => (
+        {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat) => (
           <motion.button
-            key={category}
-            className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
-            onClick={() => handleCategoryClick(category)}
+            key={`category-${cat}`}
+            className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
+            onClick={() => handleCategoryClick(cat)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {category}
+            {cat}
           </motion.button>
         ))}
       </motion.div>
 
       <AnimatePresence mode="wait">
         <motion.div 
+          key="categories-grid"
           className="categories-grid"
           variants={containerVariants}
           initial="hidden"
@@ -738,7 +785,7 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
         >
           {filteredContent.map((article) => (
             <motion.div
-              key={article.id}
+              key={`${article.id}-category-card`}
               className={`category-card ${article.category}`}
               variants={cardVariants}
               whileHover="hover"
@@ -749,7 +796,13 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
               <p className="category-description">{article.description}</p>
               <div className="card-terminal-footer">
                 <span className="card-prompt">$</span>
-                <span className="card-meta">{article.date} • {article.readingTime}</span>
+                <span className="card-meta">
+                  {new Date(article.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })} • {article.readingTime}
+                </span>
                 <span className="card-cursor">█</span>
               </div>
             </motion.div>
@@ -760,6 +813,7 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
       <AnimatePresence>
         {selectedArticle && (
           <motion.div 
+            key="modal-overlay"
             className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -783,14 +837,20 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
               <pre className="modal-ascii">{selectedArticle.ascii}</pre>
               <h2>{selectedArticle.title}</h2>
               <div className="modal-meta">
-                <span>{selectedArticle.date}</span>
+                <span>
+                  {new Date(selectedArticle.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
                 <span>{selectedArticle.readingTime}</span>
               </div>
               <div className="article-content">
                 <p className="article-intro">{selectedArticle.content.intro}</p>
-                {selectedArticle.content.sections.map((section: { title: string; content: string; code?: string }, index: number) => (
+                {selectedArticle.content.sections.map((section: Section, index: number) => (
                   <motion.div 
-                    key={index}
+                    key={`${selectedArticle.id}-section-${section.title}`}
                     className="article-section"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -800,6 +860,7 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
                     <p>{section.content}</p>
                     {section.code && (
                       <motion.div 
+                        key={`${selectedArticle.id}-section-${section.title}-code`}
                         className="code-block"
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -830,4 +891,4 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, onBack
   );
 };
 
-export default ContentBrowser; 
+export default ContentBrowser;

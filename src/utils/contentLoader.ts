@@ -1,52 +1,106 @@
 import { ContentData } from '../types';
+import matter from 'gray-matter';
+import { Buffer } from 'buffer';
 
-const sampleContent: ContentData[] = [
-  {
-    id: 'attention-mechanism',
-    title: 'attention.explain()',
-    category: 'concepts',
-    description: 'Deep dive into transformer attention mechanisms. From scaled dot-product to multi-head attention.',
-    date: '2024-03-15',
-    readingTime: '15 min',
-    ascii: `
-    ┌─Q──K──V─┐
-    │ ▲  ▲  ▲ │
-    │ └┼──┼─┘ │
-    │  └──┘   │
-    └─────────┘`,
-    content: {
-      intro: "Attention mechanisms have revolutionized how neural networks process sequential data. In this deep dive, we'll explore the mathematics and intuition behind attention, from its basic principles to advanced implementations.",
-      sections: [
-        {
-          title: "1. The Intuition",
-          content: "At its core, attention is about learning which parts of the input are most relevant for each part of the output. Just as humans focus on specific words when reading a sentence, attention mechanisms allow neural networks to 'focus' on relevant parts of the input sequence."
-        },
-        {
-          title: "2. Scaled Dot-Product Attention",
-          content: "The fundamental building block of modern attention mechanisms is scaled dot-product attention. It computes the compatibility between queries and keys, then uses these scores to create a weighted sum of values.",
-          code: `def scaled_dot_product_attention(Q, K, V):
-    # Compute attention scores
-    scores = torch.matmul(Q, K.transpose(-2, -1))
-    # Scale the scores
-    d_k = torch.tensor(K.size(-1))
-    scores = scores / torch.sqrt(d_k)
-    # Apply softmax to get probabilities
-    attention = torch.softmax(scores, dim=-1)
-    # Compute weighted sum of values
-    return torch.matmul(attention, V)`
-        }
-      ],
-      conclusion: "Understanding attention mechanisms is crucial for working with modern neural architectures."
+// Polyfill Buffer for browser environment
+globalThis.Buffer = Buffer;
+
+interface Section {
+  title: string;
+  content: string;
+  code?: string;
+}
+
+async function loadMarkdownFile(filePath: string): Promise<ContentData | null> {
+  try {
+    // Remove the leading slash as Vite will resolve relative to the project root
+    const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+    const response = await fetch(cleanPath);
+    const text = await response.text();
+    const { data, content } = matter(text);
+    
+    // Parse the frontmatter
+    const {
+      id,
+      title,
+      category,
+      description,
+      date,
+      readingTime,
+      ascii
+    } = data as Omit<ContentData, 'content'>;
+
+    // Split content into sections
+    const sections = content.split('\n## ').map(section => {
+      if (!section.includes('\n')) return null;
+      const [title, ...contentParts] = section.split('\n');
+      const sectionContent = contentParts.join('\n').trim();
+      
+      // Check if there's a code block
+      const codeMatch = sectionContent.match(/```[\w]*\n([\s\S]*?)```/);
+      const code = codeMatch ? codeMatch[1].trim() : undefined;
+      const textContent = sectionContent.replace(/```[\w]*\n[\s\S]*?```/g, '').trim();
+
+      return {
+        title: title.replace('## ', '').trim(),
+        content: textContent,
+        code
+      } as Section;
+    }).filter((section): section is Section => section !== null);
+
+    // First section is the intro
+    const intro = sections.shift()?.content || '';
+
+    // Last section might be conclusion
+    let conclusion: string | undefined;
+    if (sections.length > 0 && sections[sections.length - 1].title.toLowerCase().includes('conclusion')) {
+      conclusion = sections.pop()?.content;
     }
-  },
-  // Add more sample content here as needed
-];
 
-export function watchContent(callback: (content: ContentData[]) => void) {
-  // Simulate content loading
-  setTimeout(() => {
-    callback(sampleContent);
-  }, 100);
+    return {
+      id,
+      title,
+      category,
+      description,
+      date,
+      readingTime,
+      ascii,
+      content: {
+        intro,
+        sections,
+        conclusion
+      }
+    };
+  } catch (error) {
+    console.error('Error loading markdown file:', error);
+    return null;
+  }
+}
+
+export async function watchContent(callback: (content: ContentData[]) => void) {
+  try {
+    const contentFiles = await Promise.all(
+      Object.entries({
+        ...import.meta.glob('../../content/concepts/*.md'),
+        ...import.meta.glob('../../content/tutorials/*.md'),
+        ...import.meta.glob('../../content/projects/*.md'),
+        ...import.meta.glob('../../content/thoughts/*.md')
+      }).map(async ([path, loader]) => {
+        const content = await loadMarkdownFile(path);
+        return content;
+      })
+    );
+
+    // Filter out any null results and sort by date
+    const validContent = contentFiles
+      .filter((content: ContentData | null): content is ContentData => content !== null)
+      .sort((a: ContentData, b: ContentData) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    callback(validContent);
+  } catch (error) {
+    console.error('Error watching content:', error);
+    callback([]);
+  }
 }
 
 export type { ContentData }; 

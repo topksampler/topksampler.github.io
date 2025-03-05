@@ -18,7 +18,12 @@ function App() {
 
   const handleBack = () => {
     if (location.pathname.includes('/content/')) {
-      navigate('/content');
+      // If we're in an article view, go back to the category
+      if (location.pathname.split('/').length > 3) {
+        navigate(`/content/${location.pathname.split('/')[2]}`);
+      } else {
+        navigate('/content');
+      }
     } else {
       navigate('/');
     }
@@ -44,6 +49,13 @@ function App() {
           <Route path="/content/:category" element={
             <ContentBrowser 
               initialCategory={location.pathname.split('/').pop() || null}
+              onBack={handleBack}
+            />
+          } />
+          <Route path="/content/:category/:articleId" element={
+            <ContentBrowser 
+              initialCategory={location.pathname.split('/')[2] || null}
+              articleId={location.pathname.split('/').pop() || null}
               onBack={handleBack}
             />
           } />

@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@types/node": "^22.13.9",
+    "buffer": "^6.0.3",
     "chokidar": "^4.0.3",
     "framer-motion": "^12.4.10",
     "gray-matter": "^4.0.3",

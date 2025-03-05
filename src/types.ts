@@ -8,11 +8,11 @@ export interface ContentData {
   ascii: string;
   content: {
     intro: string;
-    sections: {
+    sections: Array<{
       title: string;
       content: string;
       code?: string;
-    }[];
+    }>;
     conclusion?: string;
   };
 } 

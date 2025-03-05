@@ -1,4 +1,5 @@
 ---
+id: attention
 title: attention.explain()
 category: concepts
 description: Deep dive into transformer attention mechanisms. From scaled dot-product to multi-head attention.
