@@ -112,12 +112,9 @@ const codeVariants = {
 
 const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [isNavigationEnabled, setIsNavigationEnabled] = useState(true);
 
   const handleStepClick = (stepId: string) => {
-    if (isNavigationEnabled) {
-      onContentView(stepId);
-    }
+    onContentView(stepId);
   };
 
   return (
@@ -130,20 +127,7 @@ const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
         transition={{ duration: 0.6 }}
       >
         <h2 className="journey-title">brain.map()</h2>
-        <p className="journey-subtitle">traverse(neural_pathways) ={'>'} knowledge</p>
-        <div className="navigation-toggle">
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={isNavigationEnabled}
-              onChange={(e) => setIsNavigationEnabled(e.target.checked)}
-            />
-            <span className="toggle-slider"></span>
-          </label>
-          <span className="toggle-label">
-            navigation.{isNavigationEnabled ? 'enabled()' : 'disabled()'}
-          </span>
-        </div>
+        <p className="journey-subtitle">traverse(neural_pathways) {'=>'} knowledge</p>
       </motion.div>
       
       <motion.div 
@@ -156,7 +140,7 @@ const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
         {steps.map((step, index) => (
           <motion.div
             key={step.id}
-            className={`journey-step ${isNavigationEnabled ? 'clickable' : ''}`}
+            className="journey-step"
             variants={stepVariants}
             onClick={() => handleStepClick(step.id)}
           >

@@ -1,34 +1,61 @@
 .hero-section {
-  min-height: 100vh;
+  min-height: 0.25vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  background-color: var(--color-black);
+  padding: 1rem 1rem;
   color: var(--color-white);
+  padding-top: 0; /* Reset padding-top */
+  padding-bottom: 5rem; /* Add more padding to the bottom */
+  margin-top: 0; /* Reset negative margin */
+  margin-bottom: 5rem;
+}
+
+.hero-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    var(--color-gray-950) 100%
+  );
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 .hero-content {
   text-align: center;
-  max-width: 800px;
+  max-width: 950px; /* Increased to accommodate larger ASCII art */
+  display: flex;
+  flex-direction: column;
+  gap: 3rem; /* Increase gap between elements */
+  align-items: center;
+  justify-content: center;
+  margin-top: 5rem; /* Add more margin to push content down */
 }
 
 .ascii-art {
   font-family: var(--font-mono);
   white-space: pre;
-  margin-bottom: 2rem;
-  font-size: clamp(0.8rem, 2vw, 1.2rem);
-  opacity: 0;
-  animation: fadeIn 1s ease-out forwards;
+  font-size: clamp(0.3rem, 0.9vw, 0.6rem); /* Adjusted for better visibility */
+  line-height: 1.2;
+  margin: 4rem auto 2rem; /* Increase top margin */
+  text-align: center;
+  display: block;
+  letter-spacing: 0; /* Ensure characters line up */
+  overflow: hidden; /* Prevent scrollbars */
 }
 
 .terminal {
-  margin: 2rem auto;
-  padding: 1rem;
+  margin: 0 auto;
+  padding: 0.75rem;
   background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: 4px;
-  text-align: center;
   width: 100%;
   max-width: 600px;
 }
@@ -61,15 +88,13 @@
 }
 
 .topics-container {
-  margin: 3rem 0;
-  opacity: 0;
-  animation: fadeIn 1s ease-out 1s forwards;
+  margin: 0.5rem 0;
 }
 
 .topics {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
 }
 
@@ -125,11 +150,9 @@
 
 .navigation-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
-  margin: 3rem 0;
-  opacity: 0;
-  animation: fadeIn 1s ease-out 1.5s forwards;
+  margin: 0.5rem 0;
 }
 
 .navigation-buttons button {
@@ -155,24 +178,41 @@
 }
 
 .scroll-indicator {
-  margin-top: 4rem;
-  opacity: 0;
-  animation: fadeIn 1s ease-out 2s forwards;
+  margin-top: 1rem;
+  margin-bottom: 0;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.scroll-indicator:hover {
+  transform: translateY(2px);
+}
+
+.scroll-indicator:hover .scroll-text,
+.scroll-indicator:hover .scroll-arrow {
+  color: var(--color-white);
 }
 
 .scroll-text {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--color-gray-500);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
   display: block;
 }
 
 .scroll-arrow {
-  font-family: var(--font-mono);
-  color: var(--color-gray-500);
-  animation: bounce 2s infinite;
+  margin: 0;
   line-height: 1;
+  font-size: 1.2rem;
+  text-align: center;
+  animation: bounce 1.5s infinite;
+  color: var(--color-gray-400);
+  font-family: var(--font-mono);
 }
 
 @keyframes fadeIn {
@@ -196,16 +236,32 @@
     transform: translateY(0);
   }
   40% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   60% {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
   }
 }
 
 @media (max-width: 768px) {
   .hero-section {
+    min-height: 100vh;
     padding: 1rem;
+    margin-top: 0; /* Reset negative margin on mobile */
+  }
+
+  .hero-content {
+    gap: 2rem; /* Slightly reduced gap for mobile */
+    max-width: 100%;
+    margin-top: 3rem; /* Reduced top margin for mobile */
+  }
+
+  .ascii-art {
+    font-size: clamp(0.25rem, 0.8vw, 0.5rem); /* Smaller on mobile */
+    margin: 2rem auto 1rem; /* Adjust margins for mobile */
+    overflow-x: auto; /* Allow horizontal scrolling on very small screens if needed */
+    white-space: pre;
+    width: 100%;
   }
 
   .topics {
@@ -218,10 +274,35 @@
   }
 
   .navigation-buttons {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .navigation-buttons button {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .scroll-indicator {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
   }
 
   .topic-description {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    min-height: 100vh;
+  }
+
+  .ascii-art {
+    font-size: 0.25rem; /* Fixed size for very small screens */
+  }
+
+  .navigation-buttons {
+    flex-direction: column;
   }
 } 

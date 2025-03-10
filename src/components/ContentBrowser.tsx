@@ -625,6 +625,33 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define the CaffeineBrain ASCII art from the homepage
+  const caffeineAsciiArt = `
+   ██████╗ █████╗ ███████╗███████╗███████╗██╗███╗   ██╗███████╗
+  ██╔════╝██╔══██╗██╔════╝██╔════╝██╔════╝██║████╗  ██║██╔════╝
+  ██║     ███████║█████╗  █████╗  █████╗  ██║██╔██╗ ██║█████╗  
+  ██║     ██╔══██║██╔══╝  ██╔══╝  ██╔══╝  ██║██║╚██╗██║██╔══╝  
+  ╚██████╗██║  ██║██║     ██║     ███████╗██║██║ ╚████║███████╗
+   ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝     ╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝
+                                                          
+  ██████╗ ██████╗  █████╗ ██╗███╗   ██╗                        
+  ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║                        
+  ██████╔╝██████╔╝███████║██║██╔██╗ ██║                        
+  ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║                        
+  ██████╔╝██║  ██║██║  ██║██║██║ ╚████║                        
+  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝                        
+`;
+
+  // Define the CB ASCII art logo
+  const cbAsciiArt = `
+   ██████╗██████╗ 
+  ██╔════╝██╔══██╗
+  ██║     ██████╔╝
+  ██║     ██╔══██╗
+  ╚██████╗██████╔╝
+   ╚═════╝╚═════╝ 
+`;
+
   useEffect(() => {
     const loadContent = async () => {
       setIsLoading(true);
@@ -719,92 +746,6 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
     ? content.filter(item => item.category === selectedCategory)
     : content;
 
-  const renderMarkdown = (content: string) => {
-    return (
-      <div className="markdown-content">
-        <ReactMarkdown
-          rehypePlugins={[rehypeRaw]}
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({node, inline, className, children, ...props}) {
-              const match = /language-(\w+)/.exec(className || '');
-              const language = match ? match[1] : '';
-              
-              if (!inline && language) {
-                return (
-                  <SyntaxHighlighter
-                    className="syntax-highlighter"
-                    language={language}
-                    style={atomDark}
-                    customStyle={{
-                      background: 'rgba(0, 0, 0, 0.4)',
-                      margin: '2em -2rem',
-                      padding: '1.5rem 2rem',
-                    }}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                );
-              }
-              return <code className={className} {...props}>{children}</code>;
-            },
-            // Add custom heading components with animations
-            h1: ({children}) => (
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {children}
-              </motion.h1>
-            ),
-            h2: ({children}) => (
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                {children}
-              </motion.h2>
-            ),
-            // Add custom paragraph component with animations
-            p: ({children}) => (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                {children}
-              </motion.p>
-            ),
-            // Add custom blockquote component with animations
-            blockquote: ({children}) => (
-              <motion.blockquote
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {children}
-              </motion.blockquote>
-            ),
-            // Add custom image component with animations
-            img: ({src, alt}) => (
-              <motion.img
-                src={src}
-                alt={alt}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              />
-            ),
-          }}
-        >
-          {content}
-        </ReactMarkdown>
-      </div>
-    );
-  };
-
   const renderArticle = (article: ContentData) => {
     // Convert article content to markdown string
     const markdownContent = `
@@ -833,14 +774,18 @@ ${article.content.conclusion}` : ''}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
         <div className="article-container">
+          {/* <div className="logo-container" style={{ textAlign: 'center', marginBottom: '15px' }}>
+            <img src="/brain.svg" alt="Caffeine Brain Logo" style={{ width: '60px', height: 'auto' }} />
+          </div> */}
+          
           <motion.pre 
             className="article-ascii"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
           >
             {article.ascii}
           </motion.pre>
@@ -849,7 +794,7 @@ ${article.content.conclusion}` : ''}
             className="article-title"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
           >
             {article.title}
           </motion.h1>
@@ -858,22 +803,89 @@ ${article.content.conclusion}` : ''}
             className="article-meta"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
           >
             <span>{new Date(article.date).toLocaleDateString('en-US', {
               year: 'numeric',
-              month: 'short',
+              month: 'long',
               day: 'numeric'
             })}</span>
             <span>{article.readingTime}</span>
           </motion.div>
 
           <motion.div
+            className="markdown-content"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
           >
-            {renderMarkdown(markdownContent)}
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                code({node, inline, className, children, ...props}) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !inline && match ? (
+                    <div style={{ position: 'relative' }}>
+                      <SyntaxHighlighter
+                        style={atomDark}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                      <button
+                        className="copy-button"
+                        onClick={async (e) => {
+                          const button = e.currentTarget;
+                          try {
+                            await navigator.clipboard.writeText(String(children));
+                            button.innerHTML = `
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 6L9 17l-5-5"></path>
+                              </svg>
+                              <span>Copied!</span>
+                            `;
+                            setTimeout(() => {
+                              button.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                              `;
+                            }, 2000);
+                          } catch (err) {
+                            console.error('Failed to copy code:', err);
+                            button.innerHTML = `
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                              </svg>
+                              <span>Error!</span>
+                            `;
+                          }
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                }
+              }}
+            >
+              {markdownContent}
+            </ReactMarkdown>
           </motion.div>
         </div>
       </motion.div>
@@ -937,14 +949,20 @@ ${article.content.conclusion}` : ''}
                 delay: 0.2 
               }}
             >
+              <div className="logo-container" style={{ textAlign: 'center', marginBottom: '15px' }}>
+                <pre style={{ 
+                  fontFamily: 'JetBrains Mono, monospace', 
+                  color: 'var(--color-gray-300)',
+                  fontSize: '0.7rem',
+                  margin: '0 auto',
+                  whiteSpace: 'pre',
+                  textAlign: 'center'
+                }}>
+                  {/* {cbAsciiArt} */}
+                </pre>
+              </div>
               <pre className="ascii-header">
-                {`
-   _____ _    ____ ____ _____ ___ _   _ _____ 
-  | ____| |  / ___|  _ \\_   _|_ _| \\ | | ____|
-  |  _| | | | |   | |_) || |  | ||  \\| |  _|  
-  | |___| |_| |___|  _ < | |  | || |\\  | |___ 
-  |_____|____\\____|_| \\_\\|_| |___|_| \\_|_____|
-                `}
+                {caffeineAsciiArt}
               </pre>
             </motion.div>
 
@@ -1016,16 +1034,14 @@ ${article.content.conclusion}` : ''}
                   >
                     {article.ascii}
                   </motion.pre>
-                  {article.description && (
-                    <motion.p 
-                      className="card-description"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      {article.description}
-                    </motion.p>
-                  )}
+                  <motion.div 
+                    className="card-description"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {article.description}
+                  </motion.div>
                   <motion.div 
                     className="card-meta"
                     initial={{ opacity: 0 }}
@@ -1035,7 +1051,7 @@ ${article.content.conclusion}` : ''}
                     <span>
                       {new Date(article.date).toLocaleDateString('en-US', {
                         year: 'numeric',
-                        month: 'short',
+                        month: 'long',
                         day: 'numeric'
                       })} • {article.readingTime}
                     </span>
