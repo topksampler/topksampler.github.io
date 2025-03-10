@@ -441,29 +441,21 @@ const containerVariants = {
   visible: { 
     opacity: 1,
     transition: { 
-      staggerChildren: 0.1,
-      delayChildren: 0.2
+      staggerChildren: 0.05,
+      delayChildren: 0.1
     }
   },
-  exit: { 
-    opacity: 0,
-    transition: { 
-      staggerChildren: 0.05,
-      staggerDirection: -1
-    }
-  }
+  exit: { opacity: 0 }
 };
 
 const cardVariants = {
   hidden: { 
-    y: 20, 
     opacity: 0,
-    scale: 0.95
+    y: 20
   },
   visible: { 
-    y: 0, 
     opacity: 1,
-    scale: 1,
+    y: 0,
     transition: {
       type: "spring",
       stiffness: 100,
@@ -471,20 +463,18 @@ const cardVariants = {
     }
   },
   exit: { 
-    y: -20, 
     opacity: 0,
-    scale: 0.95,
+    y: -20,
     transition: {
       duration: 0.2
     }
   },
   hover: {
-    scale: 1.02,
-    y: -5,
+    y: -4,
     transition: {
       type: "spring",
-      stiffness: 400,
-      damping: 25
+      stiffness: 200,
+      damping: 20
     }
   }
 };
@@ -662,12 +652,37 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
       const article = content.find(item => item.id === articleId);
       if (article) {
         setSelectedArticle(article);
+        if (article.category !== selectedCategory) {
+          setSelectedCategory(article.category);
+        }
       } else {
         setError(`Article "${articleId}" not found`);
         navigate('/content');
       }
+    } else if (!articleId) {
+      setSelectedArticle(null);
     }
-  }, [articleId, content, navigate]);
+  }, [articleId, content, navigate, selectedCategory]);
+
+  useEffect(() => {
+    // Default to 'concepts' when no category is selected
+    if (!selectedCategory && !articleId) {
+      navigate('/content/concepts');
+      setSelectedCategory('concepts');
+    }
+  }, [selectedCategory, articleId, navigate]);
+
+  // Remove the mouse tracking effect
+  useEffect(() => {
+    const cards = document.querySelectorAll('.content-card');
+    const grid = document.querySelector('.content-grid');
+
+    if (grid) {
+      cards.forEach((card) => {
+        (card as HTMLElement).style.transform = 'none';
+      });
+    }
+  }, [selectedCategory]);
 
   const handleCardClick = (article: ContentData) => {
     setSelectedArticle(article);
@@ -682,9 +697,8 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
         navigate(`/content/${pathParts[2]}`);
         setSelectedArticle(null);
       } else {
-        // If we're in a category, go back to all content
-        navigate('/content');
-        setSelectedCategory(null);
+        // If we're in a category, go back to home
+        navigate('/');
       }
     } else {
       navigate('/');
@@ -907,16 +921,21 @@ ${article.content.conclusion}` : ''}
         {!selectedArticle ? (
           <motion.div
             key="content-grid"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.5 }}
           >
             <motion.div 
               className="browser-header"
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
+                delay: 0.2 
+              }}
             >
               <pre className="ascii-header">
                 {`
@@ -933,24 +952,28 @@ ${article.content.conclusion}` : ''}
               className="category-filters"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
+                delay: 0.3 
+              }}
             >
-              <motion.button
-                key="category-all"
-                className={`category-btn ${!selectedCategory ? 'active' : ''}`}
-                onClick={() => handleCategoryClick(null)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                All
-              </motion.button>
-              {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat) => (
+              {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat, index) => (
                 <motion.button
                   key={`category-${cat}`}
                   className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
                   onClick={() => handleCategoryClick(cat)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 20,
+                    delay: 0.4 + index * 0.1 
+                  }}
                 >
                   {cat}
                 </motion.button>
@@ -958,34 +981,65 @@ ${article.content.conclusion}` : ''}
             </motion.div>
 
             <motion.div 
-              className="categories-grid"
+              className="content-grid"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              {filteredContent.map((article) => (
+              {filteredContent.map((article, index) => (
                 <motion.div
-                  key={`${article.id}-category-card`}
-                  className={`category-card ${article.category}`}
+                  key={`${article.id}-card`}
+                  className={`content-card ${article.category}`}
                   variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
                   whileHover="hover"
                   onClick={() => handleCardClick(article)}
+                  custom={index}
+                  layout
                 >
-                  <TerminalHeader title={article.title} />
-                  <pre className="category-ascii">{article.ascii}</pre>
-                  <p className="category-description">{article.description}</p>
-                  <div className="card-terminal-footer">
-                    <span className="card-prompt">$</span>
-                    <span className="card-meta">
+                  <motion.div className="terminal-header">
+                    <div className="terminal-controls">
+                      <div className="control close"></div>
+                      <div className="control minimize"></div>
+                      <div className="control maximize"></div>
+                    </div>
+                    <div className="terminal-title">{article.title}</div>
+                  </motion.div>
+                  <motion.pre 
+                    className="card-ascii"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    {article.ascii}
+                  </motion.pre>
+                  {article.description && (
+                    <motion.p 
+                      className="card-description"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      {article.description}
+                    </motion.p>
+                  )}
+                  <motion.div 
+                    className="card-meta"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <span>
                       {new Date(article.date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                       })} • {article.readingTime}
                     </span>
-                    <span className="card-cursor">█</span>
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </motion.div>

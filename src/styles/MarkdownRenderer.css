@@ -9,6 +9,7 @@
   color: var(--color-gray-200);
   font-size: 1rem;
   text-align: left;
+  background: var(--color-gray-950);
 }
 
 .md-h1, .md-h2, .md-h3 {
@@ -23,18 +24,21 @@
   font-size: 2rem;
   font-weight: 700;
   margin: 2rem 0 1.5rem;
+  color: var(--color-white);
 }
 
 .md-h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 2rem 0 1rem;
+  color: var(--color-gray-100);
 }
 
 .md-h3 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 1.5rem 0 1rem;
+  color: var(--color-gray-200);
 }
 
 .md-p {
@@ -49,6 +53,7 @@
   margin: 1.5rem -2rem;
   padding: 1.5rem 2rem;
   background-color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
   border-radius: 4px;
   overflow-x: auto;
   font-family: 'JetBrains Mono', monospace;
@@ -97,14 +102,15 @@
 }
 
 .md-a {
-  color: #3b82f6;
+  color: var(--color-gray-200);
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
+  border-bottom: 1px solid var(--color-gray-700);
+  transition: all 0.2s ease;
 }
 
 .md-a:hover {
-  border-bottom-color: currentColor;
+  color: var(--color-white);
+  border-bottom-color: var(--color-white);
 }
 
 .md-img {
@@ -112,6 +118,7 @@
   height: auto;
   border-radius: 4px;
   margin: 1.5rem 0;
+  border: 1px solid var(--color-gray-800);
 }
 
 .md-hr {
@@ -149,38 +156,22 @@
   text-align: left;
   font-size: 1rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.md-callout.info {
-  background-color: rgba(59, 130, 246, 0.1);
-  border-left: 4px solid #3b82f6;
-}
-
-.md-callout.warning {
-  background-color: rgba(245, 158, 11, 0.1);
-  border-left: 4px solid #f59e0b;
-}
-
-.md-callout.error {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-left: 4px solid #ef4444;
-}
-
-.md-callout.success {
-  background-color: rgba(34, 197, 94, 0.1);
-  border-left: 4px solid #22c55e;
+  background-color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
+  color: var(--color-gray-300);
 }
 
 /* Notes */
 .md-note {
   margin: 1.5rem 0;
   padding: 1rem 1.5rem;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: 4px;
   text-align: left;
   font-size: 1rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-gray-300);
 }
 
 .md-note::before {
@@ -206,10 +197,13 @@
   margin: 0.5rem 0;
   font-size: 1rem;
   text-align: left;
+  color: var(--color-gray-300);
 }
 
 .md-task-list-item input[type="checkbox"] {
   margin: 0;
+  border: 1px solid var(--color-gray-700);
+  background-color: var(--color-gray-900);
 }
 
 /* Definition Lists */
@@ -271,6 +265,8 @@
   font-size: 0.9rem;
   text-align: left;
   font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--color-gray-800);
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {
