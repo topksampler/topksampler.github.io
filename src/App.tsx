@@ -16,22 +16,7 @@ function App() {
     }
   }
 
-  const handleBack = () => {
-    const pathParts = location.pathname.split('/');
-    
-    // If we're in an article view (e.g., /content/category/article)
-    if (pathParts.length > 3) {
-      navigate(`/content/${pathParts[2]}`); // Go back to category view
-    }
-    // If we're in a category view (e.g., /content/category)
-    else if (pathParts.length === 3) {
-      navigate('/content'); // Go back to all content
-    }
-    // If we're in the main content view
-    else if (location.pathname === '/content') {
-      navigate('/'); // Go back to home
-    }
-  }
+  // Navigation handler removed as back functionality is now handled through browser history
 
   return (
     <div className="app">
@@ -47,20 +32,17 @@ function App() {
           <Route path="/content" element={
             <ContentBrowser 
               initialCategory={null}
-              onBack={handleBack}
             />
           } />
           <Route path="/content/:category" element={
             <ContentBrowser 
               initialCategory={location.pathname.split('/')[2] || null}
-              onBack={handleBack}
             />
           } />
           <Route path="/content/:category/:articleId" element={
             <ContentBrowser 
               initialCategory={location.pathname.split('/')[2] || null}
               articleId={location.pathname.split('/')[3] || null}
-              onBack={handleBack}
             />
           } />
         </Routes>
