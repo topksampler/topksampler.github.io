@@ -137,7 +137,7 @@ const TerminalHeader = ({ title }: { title: string }) => (
   </div>
 );
 
-const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articleId, onBack }) => {
+const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articleId, _ }) => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
   const location = useLocation();
