@@ -85,7 +85,7 @@ export async function watchContent(callback: (content: ContentData[]) => void) {
         ...import.meta.glob('../../content/tutorials/*.md'),
         ...import.meta.glob('../../content/projects/*.md'),
         ...import.meta.glob('../../content/thoughts/*.md')
-      }).map(async ([path, loader]) => {
+      }).map(async ([path, _]) => {
         const content = await loadMarkdownFile(path);
         return content;
       })
