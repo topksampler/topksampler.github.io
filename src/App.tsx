@@ -39,10 +39,10 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={
-            <>
+            <div className="content-container">
               <HeroSection onContentView={handleContentView} />
               <JourneySection onContentView={handleContentView} />
-            </>
+            </div>
           } />
           <Route path="/content" element={
             <ContentBrowser 
