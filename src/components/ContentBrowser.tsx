@@ -73,39 +73,6 @@ const caffeineAsciiArt = `
   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝                        
 `;
 
-const MatrixRain = () => {
-  const [characters, setCharacters] = useState<Array<{id: number; char: string; x: number; delay: number}>>([]);
-
-  useEffect(() => {
-    const matrixChars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴ';
-    const numCharacters = 50;
-    const newCharacters = Array.from({ length: numCharacters }, (_, i) => ({
-      id: i,
-      char: matrixChars[Math.floor(Math.random() * matrixChars.length)],
-      x: Math.random() * 100,
-      delay: Math.random() * 2
-    }));
-    setCharacters(newCharacters);
-  }, []);
-
-  return (
-    <div className="matrix-rain">
-      {characters.map(char => (
-        <div
-          key={char.id}
-          className="matrix-character"
-          style={{
-            left: `${char.x}%`,
-            animationDelay: `${char.delay}s`
-          }}
-        >
-          {char.char}
-        </div>
-      ))}
-    </div>
-  );
-};
-
 const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articleId }) => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
@@ -368,7 +335,6 @@ ${article.content.conclusion}` : ''}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <MatrixRain />
       <motion.button
         className="back-button"
         onClick={handleBack}

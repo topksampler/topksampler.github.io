@@ -16,7 +16,7 @@ function App() {
     }
   }
 
-  // Navigation handler removed as back functionality is now handled through browser history
+  // Navigation handled through React Router
 
   return (
     <div className="app">
