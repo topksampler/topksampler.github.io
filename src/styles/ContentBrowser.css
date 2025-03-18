@@ -19,10 +19,22 @@
   --color-gray-950: #030712;
 }
 
+/* Prevent background scrolling when content browser is active */
+html.content-active,
+body.content-active {
+  overflow: hidden;
+  height: 100%;
+  position: fixed;
+  width: 100%;
+}
+
 .content-browser {
   position: relative;
   width: 100%;
   min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: linear-gradient(
     to right,
     var(--color-gray-950) 0%,
@@ -34,40 +46,9 @@
   overflow-x: hidden;
 }
 
-.content-browser::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(0, 255, 255, 0.03) 50%,
-    transparent 100%
-  );
-  background-size: 100% 3px;
-  animation: scanline 8s linear infinite;
-  pointer-events: none;
-  opacity: 0.3;
-}
+/* Removed scanline effect */
 
-.content-browser::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    circle at center,
-    transparent 0%,
-    var(--color-gray-950) 100%
-  );
-  pointer-events: none;
-  opacity: 0.5;
-}
+/* Removed radial gradient */
 
 .browser-header {
   text-align: center;
@@ -687,6 +668,7 @@
   padding: 0 1.25rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

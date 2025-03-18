@@ -1,53 +1,33 @@
 .hero-section {
-  min-height: 0.25vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem 1rem;
+  min-height: auto;
+  display: block;
   color: var(--color-white);
-  padding-top: 0; /* Reset padding-top */
-  padding-bottom: 5rem; /* Add more padding to the bottom */
-  margin-top: 0; /* Reset negative margin */
-  margin-bottom: 5rem;
+  padding: 2rem 1rem;
+  margin: 0;
 }
 
-.hero-section::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    circle at center,
-    transparent 0%,
-    var(--color-gray-950) 100%
-  );
-  pointer-events: none;
-  opacity: 0.3;
-}
+/* Removed gradient overlay */
 
 .hero-content {
   text-align: center;
-  max-width: 950px; /* Increased to accommodate larger ASCII art */
+  max-width: 950px;
   display: flex;
   flex-direction: column;
-  gap: 3rem; /* Increase gap between elements */
+  gap: 2rem;
   align-items: center;
-  justify-content: center;
-  margin-top: 5rem; /* Add more margin to push content down */
+  margin: 0 auto;
 }
 
 .ascii-art {
   font-family: var(--font-mono);
   white-space: pre;
-  font-size: clamp(0.3rem, 0.9vw, 0.6rem); /* Adjusted for better visibility */
+  font-size: clamp(0.3rem, 0.9vw, 0.6rem);
   line-height: 1.2;
-  margin: 4rem auto 2rem; /* Increase top margin */
+  margin: 1rem auto;
   text-align: center;
   display: block;
-  letter-spacing: 0; /* Ensure characters line up */
-  overflow: hidden; /* Prevent scrollbars */
+  letter-spacing: 0;
+  overflow: hidden;
 }
 
 .terminal {

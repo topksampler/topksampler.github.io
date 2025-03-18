@@ -652,6 +652,17 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
    ╚═════╝╚═════╝ 
 `;
 
+  // Add content-active class to prevent background scrolling
+  useEffect(() => {
+    document.documentElement.classList.add('content-active');
+    document.body.classList.add('content-active');
+    
+    return () => {
+      document.documentElement.classList.remove('content-active');
+      document.body.classList.remove('content-active');
+    };
+  }, []);
+
   useEffect(() => {
     const loadContent = async () => {
       setIsLoading(true);
