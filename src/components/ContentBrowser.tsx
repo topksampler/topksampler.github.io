@@ -99,10 +99,12 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
       setError(null);
       try {
         await watchContent((newContent) => {
+          console.log('[ContentBrowser] Received content:', newContent); // Log received content
           setContent(newContent);
           setIsLoading(false);
         });
       } catch (err) {
+        console.error('[ContentBrowser] Error loading content:', err); // Log errors
         setError('Failed to load content. Please try again later.');
         setIsLoading(false);
       }
@@ -172,7 +174,21 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
     ? content.filter(item => item.category === selectedCategory)
     : content;
 
+<<<<<<< HEAD
   const renderArticle = (article: ContentNode) => {
+=======
+  console.log('[ContentBrowser] State before render:', {
+    isLoading,
+    error,
+    selectedCategory,
+    articleId,
+    contentLength: content.length,
+    filteredContentLength: filteredContent.length
+  });
+
+  const renderArticle = (article: ContentData) => {
+    // Convert article content to markdown string
+>>>>>>> 081f00b (functional changes... blogs included)
     const markdownContent = `
 ${article.content.intro}
 
@@ -261,14 +277,14 @@ ${article.content.conclusion}` : ''}
                           try {
                             await navigator.clipboard.writeText(String(children));
                             button.innerHTML = `
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M20 6L9 17l-5-5"></path>
                               </svg>
                               <span>Copied!</span>
                             `;
                             setTimeout(() => {
                               button.innerHTML = `
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                                 </svg>
@@ -278,7 +294,7 @@ ${article.content.conclusion}` : ''}
                           } catch (err) {
                             console.error('Failed to copy code:', err);
                             button.innerHTML = `
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <line x1="15" y1="9" x2="9" y2="15"></line>
                                 <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -288,7 +304,7 @@ ${article.content.conclusion}` : ''}
                           }
                         }}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>

@@ -107,6 +107,7 @@ body {
 
 .journey-intro {
   text-align: center;
+  padding-top: 5rem; /* Add padding to push content down */
   margin-bottom: 4rem;
   position: relative;
   z-index: 5;
@@ -248,8 +249,9 @@ body {
 
 .journey-step {
   display: flex;
-  align-items: center;
-  gap: 2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
   padding: 2rem;
   background: linear-gradient(
     145deg,
@@ -471,12 +473,27 @@ body {
   user-select: none;
   transition: all 0.3s ease;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.step-ascii pre {
+  color: var(--color-gray-500);
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-align: left;
+  white-space: pre;
+  overflow-x: auto;
+  transition: color 0.3s ease;
+}
+
+.journey-step:hover .step-ascii pre {
+  color: var(--color-accent);
+  text-shadow: 0 0 15px rgba(100, 255, 218, 0.6);
 }
 
 .journey-step:hover .step-ascii {
   border-color: var(--color-accent);
-  color: var(--color-accent);
-  text-shadow: 0 0 15px rgba(100, 255, 218, 0.6);
   transform: scale(1.05);
 }
 

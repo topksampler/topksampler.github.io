@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import '../styles/JourneySection.css';
 
@@ -13,62 +13,6 @@ interface JourneyStep {
   ascii: string;
   code?: string;
 }
-
-const steps: JourneyStep[] = [
-  {
-    id: 'concepts',
-    title: 'model.train()',
-    content: 'Dive deep into neural architectures. From backprop to attention mechanisms, we\'ll optimize your learning rate.',
-    ascii: `
-    ┌───────────┐
-    │ℒ = ∑ℒᵢ/n │
-    │[▓▓▓▓░░░░]│
-    │epoch: 42 │
-    └───────────┘
-    `,
-    code: 'accuracy = model.fit(X_train, y_train, epochs=42)'
-  },
-  {
-    id: 'tutorials',
-    title: 'model.deploy()',
-    content: 'Transform theory into production-ready code. Each tutorial is version controlled and tested against reality.',
-    ascii: `
-    ┌──────────┐
-    │git push  │
-    │├─MLOps──┤│
-    │└─CI/CD──┘│
-    │[✓]ready  │
-    └──────────┘
-    `,
-    code: 'docker run -d caffeine-brain:latest'
-  },
-  {
-    id: 'projects',
-    title: 'github.commit()',
-    content: 'Open source projects where algorithms meet real problems. PRs welcome, bugs expected, learning guaranteed.',
-    ascii: `
-    ┌─────────┐
-    │ ⎇ main  │
-    │ └→feat  │
-    │   └→fix │
-    └─────────┘
-    `,
-    code: 'git checkout -b feature/neural-magic'
-  },
-  {
-    id: 'thoughts',
-    title: 'brain.think()',
-    content: 'Where silicon meets neurons. Exploring the space between mathematical elegance and biological chaos.',
-    ascii: `
-    ╭─────────╮
-    │δ(∂L/∂w) │
-    │ ⟨ϕ|ψ⟩   │
-    │ℝⁿ → ℝᵐ  │
-    ╰─────────╯
-    `,
-    code: 'consciousness = undefined'
-  }
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -136,8 +80,49 @@ const decorationVariants = {
   }
 };
 
+const asciiVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10
+    }
+  }
+};
+
 const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
   const sectionRef = useRef<HTMLElement>(null);
+  const [journeySteps, setJourneySteps] = useState<JourneyStep[]>([]); 
+  const [isLoading, setIsLoading] = useState(true); 
+  const [error, setError] = useState<string | null>(null); 
+
+  useEffect(() => {
+    const fetchSteps = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/content/index.json'); 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: JourneyStep[] = await response.json();
+        setJourneySteps(data);
+      } catch (e) {
+        console.error("Failed to fetch journey steps:", e);
+        if (e instanceof Error) {
+          setError(`Failed to load content categories: ${e.message}`);
+        } else {
+          setError("An unknown error occurred while loading content categories.");
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchSteps();
+  }, []); 
 
   const handleStepClick = (stepId: string) => {
     onContentView(stepId);
@@ -198,7 +183,9 @@ const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
       >
-        {steps.map((step, index) => (
+        {isLoading && <p className="loading-message">Loading pathways...</p>} 
+        {error && <p className="error-message">Error: {error}</p>} 
+        {!isLoading && !error && journeySteps.map((step, index) => ( 
           <motion.div
             key={step.id}
             className="journey-step"
@@ -209,8 +196,17 @@ const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
               transition: { type: "spring", stiffness: 300 }
             }}
           >
-            <div className="step-index">{`0${index + 1}`}</div>
-            <div className="step-content">
+            {/* Moved ASCII art outside step-content */}
+            {step.ascii && (
+              <motion.div 
+                className="step-ascii" 
+                variants={asciiVariants}
+              >
+                <pre>{step.ascii}</pre>
+              </motion.div>
+            )}
+            <div className="step-index">{`0${index + 1}`}</div> 
+            <div className="step-content"> 
               <h3 className="step-title">{step.title}</h3>
               <p className="step-description">{step.content}</p>
               {step.code && (
@@ -229,16 +225,6 @@ const JourneySection: React.FC<JourneySectionProps> = ({ onContentView }) => {
               )}
               <div className="step-hover-hint">Click to explore</div>
             </div>
-            <motion.pre 
-              className="step-ascii"
-              whileHover={{ 
-                scale: 1.05,
-                color: "var(--color-accent)",
-                transition: { type: "spring", stiffness: 300 }
-              }}
-            >
-              {step.ascii}
-            </motion.pre>
             <div className="step-glow"></div>
           </motion.div>
         ))}

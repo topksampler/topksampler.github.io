@@ -1,0 +1,30 @@
+[
+  {
+    "id": "concepts",
+    "title": "model.train()",
+    "content": "Dive deep into neural architectures. From backprop to attention mechanisms, we'll optimize your learning rate.",
+    "ascii": "\n    ┌───────────┐\n    │ℒ = ∑ℒᵢ/n │\n    │[▓▓▓▓░░░░]│\n    │epoch: 42 │\n    └───────────┘\n    ",
+    "code": "accuracy = model.fit(X_train, y_train, epochs=42)"
+  },
+  {
+    "id": "tutorials",
+    "title": "model.deploy()",
+    "content": "Transform theory into production-ready code. Each tutorial is version controlled and tested against reality.",
+    "ascii": "\n    ┌──────────┐\n    │git push  │\n    │├─MLOps──┤│\n    │└─CI/CD──┘│\n    │[✓]ready  │\n    └──────────┘\n    ",
+    "code": "docker run -d caffeine-brain:latest"
+  },
+  {
+    "id": "projects",
+    "title": "github.commit()",
+    "content": "Open source projects where algorithms meet real problems. PRs welcome, bugs expected, learning guaranteed.",
+    "ascii": "\n    ┌─────────┐\n    │ ⎇ main  │\n    │ └→feat  │\n    │   └→fix │\n    └─────────┘\n    ",
+    "code": "git checkout -b feature/neural-magic"
+  },
+  {
+    "id": "thoughts",
+    "title": "brain.think()",
+    "content": "Where silicon meets neurons. Exploring the space between mathematical elegance and biological chaos.",
+    "ascii": "\n    ╭─────────╮\n    │δ(∂L/∂w) │\n    │ ⟨ϕ|ψ⟩   │\n    │ℝⁿ → ℝᵐ  │\n    ╰─────────╯\n    ",
+    "code": "consciousness = undefined"
+  }
+]
