@@ -174,21 +174,8 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
     ? content.filter(item => item.category === selectedCategory)
     : content;
 
-<<<<<<< HEAD
   const renderArticle = (article: ContentNode) => {
-=======
-  console.log('[ContentBrowser] State before render:', {
-    isLoading,
-    error,
-    selectedCategory,
-    articleId,
-    contentLength: content.length,
-    filteredContentLength: filteredContent.length
-  });
-
-  const renderArticle = (article: ContentData) => {
     // Convert article content to markdown string
->>>>>>> 081f00b (functional changes... blogs included)
     const markdownContent = `
 ${article.content.intro}
 

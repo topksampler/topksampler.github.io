@@ -13,22 +13,8 @@ interface Section {
 
 export async function watchContent(callback: (content: ContentData[]) => void) {
   try {
-<<<<<<< HEAD
-    const contentFiles = await Promise.all(
-      Object.entries({
-        ...import.meta.glob('../../content/concepts/*.md'),
-        ...import.meta.glob('../../content/tutorials/*.md'),
-        ...import.meta.glob('../../content/projects/*.md'),
-        ...import.meta.glob('../../content/thoughts/*.md')
-      }).map(async ([path, _]) => {
-        const content = await loadMarkdownFile(path);
-        return content;
-      })
-    );
-=======
     // Get module paths using import.meta.glob, but don't load content eagerly
     const modules = import.meta.glob<false, string>('/public/content/**/*.md');
->>>>>>> 081f00b (functional changes... blogs included)
 
     const contentPromises = Object.entries(modules).map(async ([path]) => {
       try {
