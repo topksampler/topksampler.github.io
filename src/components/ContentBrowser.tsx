@@ -6,7 +6,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
-import { watchContent } from '../utils/contentLoader';
+
 import '../styles/ContentBrowser.css';
 
 interface ContentBrowserProps {
@@ -86,7 +86,7 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
   useEffect(() => {
     document.documentElement.classList.add('content-active');
     document.body.classList.add('content-active');
-    
+
     return () => {
       document.documentElement.classList.remove('content-active');
       document.body.classList.remove('content-active');
@@ -94,18 +94,18 @@ const ContentBrowser: React.FC<ContentBrowserProps> = ({ initialCategory, articl
   }, []);
 
   useEffect(() => {
-    const loadContent = async () => {
+    const loadContent = () => {
       setIsLoading(true);
       setError(null);
       try {
-        await watchContent((newContent) => {
-          console.log('[ContentBrowser] Received content:', newContent); // Log received content
-          setContent(newContent);
-          setIsLoading(false);
-        });
+        const modules = import.meta.glob('../content/nodes/*.json', { eager: true });
+        const loadedContent: ContentNode[] = Object.values(modules).map((mod: any) => mod.default || mod);
+        console.log('[ContentBrowser] Loaded content:', loadedContent);
+        setContent(loadedContent);
       } catch (err) {
-        console.error('[ContentBrowser] Error loading content:', err); // Log errors
+        console.error('[ContentBrowser] Error loading content:', err);
         setError('Failed to load content. Please try again later.');
+      } finally {
         setIsLoading(false);
       }
     };
@@ -205,7 +205,7 @@ ${article.content.conclusion}` : ''}
         transition={{ duration: 0.3 }}
       >
         <div className="article-container">
-          <motion.pre 
+          <motion.pre
             className="article-ascii"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -213,7 +213,7 @@ ${article.content.conclusion}` : ''}
           >
             {article.ascii}
           </motion.pre>
-          <motion.h1 
+          <motion.h1
             className="article-title"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -221,7 +221,7 @@ ${article.content.conclusion}` : ''}
           >
             {article.title}
           </motion.h1>
-          <motion.div 
+          <motion.div
             className="article-meta"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -245,7 +245,7 @@ ${article.content.conclusion}` : ''}
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={{
-                code({node, inline, className, children, ...props}) {
+                code({ node, inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline && match ? (
                     <div style={{ position: 'relative' }}>
@@ -331,7 +331,7 @@ ${article.content.conclusion}` : ''}
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="content-browser"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -359,15 +359,15 @@ ${article.content.conclusion}` : ''}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.div 
+            <motion.div
               className="browser-header"
               initial={{ opacity: 0, y: -50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 stiffness: 200,
                 damping: 20,
-                delay: 0.2 
+                delay: 0.2
               }}
             >
               <pre className="ascii-header">
@@ -375,15 +375,15 @@ ${article.content.conclusion}` : ''}
               </pre>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="category-filters"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 stiffness: 200,
                 damping: 20,
-                delay: 0.3 
+                delay: 0.3
               }}
             >
               {['concepts', 'tutorials', 'projects', 'thoughts'].map((cat, index) => (
@@ -395,11 +395,11 @@ ${article.content.conclusion}` : ''}
                   whileTap={{ scale: 0.95 }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     type: "spring",
                     stiffness: 200,
                     damping: 20,
-                    delay: 0.4 + index * 0.1 
+                    delay: 0.4 + index * 0.1
                   }}
                 >
                   {cat}
@@ -407,7 +407,7 @@ ${article.content.conclusion}` : ''}
               ))}
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="content-grid"
               variants={cardVariants}
               initial="initial"
@@ -435,7 +435,7 @@ ${article.content.conclusion}` : ''}
                     </div>
                     <div className="terminal-title">{article.title}</div>
                   </motion.div>
-                  <motion.pre 
+                  <motion.pre
                     className="card-ascii"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -443,7 +443,7 @@ ${article.content.conclusion}` : ''}
                   >
                     {article.ascii}
                   </motion.pre>
-                  <motion.div 
+                  <motion.div
                     className="card-description"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -451,7 +451,7 @@ ${article.content.conclusion}` : ''}
                   >
                     {article.description}
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="card-meta"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

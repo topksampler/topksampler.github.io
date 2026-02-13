@@ -1,16 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
-    .bg { fill: #111; } /* Dark background */
-    .text {
-      fill: #64FFDA; /* Accent color (adjust if needed) */
-      font-family: 'Roboto Mono', monospace;
-      font-size: 60px; /* Adjust size as needed */
-      font-weight: 700;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-  </style>
-  <rect class="bg" width="100" height="100" rx="15"/> <!-- Slightly rounded background -->
-  <text x="50%" y="50%" class="text">CB</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Dark background -->
+  <rect width="32" height="32" fill="#0a0a0a"/>
+  
+  <!-- "C" - bars RIGHT-SHIFTED relative to stem -->
+  <!-- Level 1: Top bar (shifted right) -->
+  <rect x="5" y="3" width="10" height="4" fill="#e0e0e0"/>
+  <!-- Level 2: Left stem -->
+  <rect x="2" y="8" width="4" height="3" fill="#e0e0e0"/>
+  <!-- Level 3: Left stem -->
+  <rect x="2" y="12" width="4" height="4" fill="#e0e0e0"/>
+  <!-- Level 4: Left stem -->
+  <rect x="2" y="17" width="4" height="3" fill="#e0e0e0"/>
+  <!-- Level 5: Bottom bar (shifted right) -->
+  <rect x="5" y="21" width="10" height="4" fill="#e0e0e0"/>
+
+  <!-- "B" - unchanged -->
+  <rect x="17" y="3" width="10" height="4" fill="#e0e0e0"/>
+  <rect x="17" y="8" width="4" height="3" fill="#e0e0e0"/>
+  <rect x="26" y="7" width="4" height="4" fill="#e0e0e0"/>
+  <rect x="17" y="12" width="10" height="4" fill="#e0e0e0"/>
+  <rect x="17" y="17" width="4" height="3" fill="#e0e0e0"/>
+  <rect x="26" y="16" width="4" height="4" fill="#e0e0e0"/>
+  <rect x="17" y="21" width="10" height="4" fill="#e0e0e0"/>
 </svg>
