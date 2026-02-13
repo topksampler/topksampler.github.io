@@ -10,6 +10,25 @@
 </head>
 
 <body style="background-color: #000000; margin: 0; padding: 0;">
+  <script>
+    // GitHub Pages SPA redirect handler - restore clean URL from 404.html redirect
+    (function () {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      var query = window.location.search;
+      if (query) {
+        var decoded = query.slice(1).split('&').reduce(function (s, param) {
+          var p = param.split('=');
+          s[p[0]] = p.slice(1).join('=');
+          return s;
+        }, {});
+        if (decoded.p) {
+          var path = decoded.p.replace(/~and~/g, '&');
+          window.history.replaceState(null, null, path + (decoded.q ? '?' + decoded.q.replace(/~and~/g, '&') : '') + window.location.hash);
+        }
+      }
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
