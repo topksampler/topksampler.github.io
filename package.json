@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-art": "node tools/generate-art.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -26,7 +27,8 @@
     "rehype-raw": "^7.0.0",
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
-    "remark-html": "^16.0.1"
+    "remark-html": "^16.0.1",
+    "replicate": "^1.4.0"
   },
   "devDependencies": {
     "@emotion/types": "^0.7.0",

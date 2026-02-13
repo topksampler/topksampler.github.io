@@ -1,54 +1,92 @@
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import './App.css'
-import HeroSection from './components/HeroSection'
-import JourneySection from './components/JourneySection'
-import ContentBrowser from './components/ContentBrowser'
+import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import './App.css';
+import HomePage from './components/HomePage';
+import ReadingPage from './components/ReadingPage';
+import { loadPosts, Post } from './utils/contentLoader';
 
 function App() {
   const navigate = useNavigate();
-  const location = useLocation();
+  // Initialize posts from the loader
+  const [posts] = useState<Post[]>(loadPosts());
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  const handleContentView = (category?: string) => {
-    if (category) {
-      navigate(`/content/${category}`);
-    } else {
-      navigate('/content');
+  const handlePostClick = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      navigate(`/post/${postId}`);
     }
-  }
+  };
 
-  // Navigation handled through React Router
+  const handleBack = () => {
+    setSelectedPost(null);
+    navigate('/');
+  };
+
+  const handleNavigate = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      navigate(`/post/${postId}`);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const getAdjacentPosts = (currentId: string) => {
+    const currentIndex = posts.findIndex(p => p.id === currentId);
+    return {
+      prev: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null,
+      next: currentIndex > 0 ? posts[currentIndex - 1] : null
+    };
+  };
+
+  // Handle direct URL navigation
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('/post/')) {
+      const postId = hash.split('/post/')[1];
+      const post = posts.find(p => p.id === postId);
+      if (post) {
+        setSelectedPost(post);
+      }
+    }
+  }, [posts]);
 
   return (
     <div className="app">
-      <div className="noise" />
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={
-            <div className="content-container">
-              <HeroSection onContentView={handleContentView} />
-              <JourneySection onContentView={handleContentView} />
-            </div>
-          } />
-          <Route path="/content" element={
-            <ContentBrowser 
-              initialCategory={null}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              posts={posts}
+              onPostClick={handlePostClick}
             />
-          } />
-          <Route path="/content/:category" element={
-            <ContentBrowser 
-              initialCategory={location.pathname.split('/')[2] || null}
-            />
-          } />
-          <Route path="/content/:category/:articleId" element={
-            <ContentBrowser 
-              initialCategory={location.pathname.split('/')[2] || null}
-              articleId={location.pathname.split('/')[3] || null}
-            />
-          } />
-        </Routes>
-      </main>
+          }
+        />
+        <Route
+          path="/post/:postId"
+          element={
+            selectedPost ? (
+              <ReadingPage
+                post={selectedPost}
+                prevPost={getAdjacentPosts(selectedPost.id).prev}
+                nextPost={getAdjacentPosts(selectedPost.id).next}
+                onBack={handleBack}
+                onNavigate={handleNavigate}
+              />
+            ) : (
+              <HomePage
+                posts={posts}
+                onPostClick={handlePostClick}
+              />
+            )
+          }
+        />
+      </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

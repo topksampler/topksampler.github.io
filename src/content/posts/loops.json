@@ -1,0 +1,32 @@
+{
+  "id": "loops-are-solved",
+  "title": "Loops Are Solved",
+  "date": "2026-01-15",
+  "content": "## loops are solved\nas i wait, looking at the agent revving, i realize all of my work is already automated and completed in a parallel universe! cursor is killing it with the agents, and claude-opus-4.5-high got me high thinking about the possibilities that open up. \n\n> and to all the engineers out there, coping hard with the fact that agents hallucinate, i'd say continue. agents are only getting better.\n\nthe sooner one understands this the better. agents are a context problem. the early agents of 2024 were great at accumulating context. what they lacked was context of how software was written. through endless rounds of post-training, LLMs inherently understand the software development cycle better than most developers do.\n\ngreat software is a combination of getting the right code, a long solved problem imo, understanding the codebase and design decisions, verifying code changes work, looking at the toolchains available to maintaining the codebase, linters, unittests, build infra, and ability to test the whole thing and iterate. \n\na human takes a long time to crack this unspoken law of large codebases, and once done, becomes unstoppable. the leverage these tools offer are second to none. \\n\\nagents cracked this unspoken law. today, they can understand codebases, understand features, think and reason about the equilibrium shifts that a request would create and how to offset that, keeping the boat afloat, work very well with the tooling around, be it virtual environments, builds, terminal timeouts, computer use to design great UI and UX. that's the whole deal.\n\n### Systems\n\nwell if everything that an early-mid developer does is automated in the beginning of 2026, i'm sure things will get better mid way through, for this is an exponential progression. \n\n> cost of software is tending to 0!\n## exciting areas\n\n1. automating yourself out of your job - developers, hear me out! claude code can definitely complete your task for you! you just need to establish the hows, whys, and wheres of the task. \n2. systems research - is linux the best operating system out there? is mysql the best database? i personally have never questioned any piece of software, and it is about time i start doing so\n3. building agents around you to identify and complete loops! the future is going to be big with agents, i see it large and clear, for the very first time! think of all those loops in your house, solved! orchestraion as a service\n4. these agents will move to the physical world around us! welcome robots!\n5. research becomes accessible, with agents! research is experimentation and contextualizing findings in the bigger picture. agents can definitely experiment, and contextualizing findings in the bigger picture, yes - can be done! imagine the types of problems you get to solve\n6. efficient agents! today agents are verbose and take a lot of computer time and resources! what would it take to get opus level agents with a llama-4?",
+  "sideNotes": [
+    {
+      "id": "1",
+      "anchor": "the sooner one understands this the better. agents are a context problem. the early agents of 2024 were great at accumulating context. what they lacked was context of how software was written. through endless rounds of post-training, LLMs inherently understand the software development cycle better than most developers do.",
+      "note": "checking if position of the note reflects",
+      "side": "left"
+    },
+    {
+      "id": "2",
+      "anchor": "loops are solved",
+      "note": "yo brother! we are dead!",
+      "side": "right"
+    },
+    {
+      "id": "3",
+      "anchor": "automating yourself out of your job - developers, hear me out! claude code can definitely complete your task for you! you just need to establish the hows, whys, and wheres of the task.",
+      "note": "test note here - actually let me try adding a really long one here! today i have wasted my entire day - after i thought of this\n\n\n\n\nmann! we need to get going",
+      "side": "right"
+    },
+    {
+      "id": "4",
+      "anchor": "hese agents will move to the physical world around us! welcome robots!",
+      "note": "weclome robots",
+      "side": "right"
+    }
+  ]
+}

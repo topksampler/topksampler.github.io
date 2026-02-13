@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import '../styles/HeroSection.css';
+import SocialLinks from './SocialLinks';
 
 interface HeroSectionProps {
   onContentView: (category?: string) => void;
@@ -56,13 +57,13 @@ const HeroSection = ({ onContentView }: HeroSectionProps) => {
           <div className="vignette-overlay"></div>
         </div>
 
-        <motion.div 
+        <motion.div
           className="hero-content"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <motion.pre 
+          <motion.pre
             className="ascii-art"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -71,7 +72,7 @@ const HeroSection = ({ onContentView }: HeroSectionProps) => {
             {asciiArt}
           </motion.pre>
 
-          <motion.div 
+          <motion.div
             className="terminal"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -92,8 +93,8 @@ const HeroSection = ({ onContentView }: HeroSectionProps) => {
               </div>
             </div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="topics-container"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -117,13 +118,13 @@ const HeroSection = ({ onContentView }: HeroSectionProps) => {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="navigation-buttons"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.2 }}
           >
-            <motion.button 
+            <motion.button
               onClick={() => onContentView()}
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
               whileTap={{ scale: 0.95 }}
@@ -132,7 +133,9 @@ const HeroSection = ({ onContentView }: HeroSectionProps) => {
               <span className="button-glow"></span>
             </motion.button>
           </motion.div>
-          
+
+          <SocialLinks />
+
           <div className="terminal-decoration">
             <div className="terminal-line"></div>
             <div className="terminal-dots">

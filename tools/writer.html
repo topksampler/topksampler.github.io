@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caffeine Writer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111;
+            --border: #222;
+            --text: #e0e0e0;
+            --muted: #666;
+            --accent: #64ffda;
+            --font-mono: 'SF Mono', 'Monaco', 'Menlo', monospace;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 0.75rem;
+            color: var(--muted);
+            white-space: pre;
+            line-height: 1.2;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1.25rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: transparent;
+            color: var(--accent);
+        }
+
+        /* Main Layout */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Editor */
+        .editor-panel {
+            border-right: 1px solid var(--border);
+        }
+
+        #editor {
+            flex: 1;
+            padding: 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            resize: none;
+            outline: none;
+        }
+
+        #editor::placeholder {
+            color: var(--muted);
+        }
+
+        /* Preview */
+        .preview-panel {
+            overflow-y: auto;
+        }
+
+        #preview {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        #preview h1,
+        #preview h2,
+        #preview h3,
+        #preview h4 {
+            margin: 1.5rem 0 1rem;
+            color: var(--text);
+        }
+
+        #preview h2 {
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        #preview h3 {
+            font-size: 1rem;
+            border-left: 2px solid var(--muted);
+            padding-left: 0.75rem;
+        }
+
+        #preview p {
+            margin: 1rem 0;
+            line-height: 1.8;
+        }
+
+        #preview blockquote {
+            border-left: 2px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        #preview code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.4rem;
+            font-size: 0.85em;
+        }
+
+        #preview pre {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 2px solid var(--border);
+        }
+
+        #preview pre code {
+            background: none;
+            padding: 0;
+        }
+
+        #preview ol,
+        #preview ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        #preview li {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            border-top: 1px solid var(--border);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notes-header {
+            padding: 0.75rem 1.5rem;
+            background: var(--surface);
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+
+        .notes-list {
+            padding: 0;
+        }
+
+        .note-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            align-items: flex-start;
+        }
+
+        .note-anchor {
+            font-size: 0.75rem;
+            color: var(--accent);
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .note-text {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .note-delete {
+            font-size: 0.75rem;
+            color: var(--muted);
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .note-delete:hover {
+            color: #ff6b6b;
+            opacity: 1;
+        }
+
+        /* Metadata form */
+        .metadata {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .metadata input {
+            flex: 1;
+            padding: 0.5rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .metadata input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Selection popup */
+        .selection-popup {
+            position: fixed;
+            background: var(--surface);
+            border: 1px solid var(--accent);
+            padding: 0.5rem;
+            display: none;
+            z-index: 1000;
+        }
+
+        .selection-popup button {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            width: 500px;
+            max-width: 90%;
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .modal label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .modal input,
+        .modal textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .modal textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal .position-selector {
+            display: flex;
+            gap: 2rem;
+            margin-top: 0.5rem;
+            align-items: center;
+        }
+
+        .modal .position-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .modal .position-option input[type="radio"] {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+
+        .modal .position-option label {
+            margin: 0;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .modal .modal-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Stats */
+        .stats {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        /* Empty state */
+        .empty-notes {
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 0.75rem 1.5rem;
+            font-size: 0.85rem;
+            display: none;
+            z-index: 3000;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <pre class="logo">CAFFEINE
+WRITER</pre>
+        <div class="actions">
+            <button onclick="clearAll()">New</button>
+            <button onclick="saveToStorage(); showToast('Saved to browser storage!');">Save</button>
+            <button class="primary" onclick="copyJson()">Copy JSON</button>
+        </div>
+    </header>
+
+    <div class="metadata">
+        <input type="text" id="title" placeholder="Post Title">
+        <input type="text" id="slug" placeholder="url-slug (auto-generated)">
+        <input type="date" id="date">
+    </div>
+
+    <main>
+        <div class="panel editor-panel">
+            <div class="panel-header">
+                <span>Write</span>
+                <span class="stats" id="stats">0 words</span>
+            </div>
+            <textarea id="editor" placeholder="Start writing...
+
+Use ## for section headings
+Use > for quotes
+Use ```language for code blocks
+
+Select text in the preview to add margin notes."></textarea>
+        </div>
+
+        <div class="panel preview-panel">
+            <div class="panel-header">Preview</div>
+            <div id="preview"></div>
+            <div class="notes-section">
+                <div class="notes-header">
+                    <span>Margin Notes</span>
+                    <span id="note-count">0</span>
+                </div>
+                <div class="notes-list" id="notes-list">
+                    <div class="empty-notes">Select text in preview, then add a note</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="selection-popup" id="selection-popup">
+        <button onclick="openNoteModal()">+ Add Note</button>
+    </div>
+
+    <div class="modal-overlay" id="note-modal">
+        <div class="modal">
+            <h3>Add Margin Note</h3>
+            <label>Anchor Text</label>
+            <input type="text" id="note-anchor" readonly>
+            <label>Your Note</label>
+            <textarea id="note-text" placeholder="Write your annotation..."></textarea>
+            <label>Position</label>
+            <div class="position-selector">
+                <div class="position-option">
+                    <input type="radio" name="note-side" id="side-left" value="left" checked>
+                    <label for="side-left">← Left</label>
+                </div>
+                <div class="position-option">
+                    <input type="radio" name="note-side" id="side-right" value="right">
+                    <label for="side-right">Right →</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeNoteModal()">Cancel</button>
+                <button class="primary" onclick="saveNote()">Add Note</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // State
+        let notes = [];
+        let selectedText = '';
+
+        // Elements
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const titleInput = document.getElementById('title');
+        const slugInput = document.getElementById('slug');
+        const dateInput = document.getElementById('date');
+        const notesList = document.getElementById('notes-list');
+        const noteCount = document.getElementById('note-count');
+        const selectionPopup = document.getElementById('selection-popup');
+        const noteModal = document.getElementById('note-modal');
+        const noteAnchor = document.getElementById('note-anchor');
+        const noteText = document.getElementById('note-text');
+        const stats = document.getElementById('stats');
+        const toast = document.getElementById('toast');
+
+        // Initialize
+        function init() {
+            loadFromStorage();
+            dateInput.value = new Date().toISOString().split('T')[0];
+            editor.addEventListener('input', onEditorChange);
+            editor.addEventListener('paste', onEditorPaste);
+            titleInput.addEventListener('input', onTitleChange);
+            preview.addEventListener('mouseup', onPreviewSelect);
+            document.addEventListener('mousedown', hidePopup);
+            render();
+        }
+
+        // Auto-generate slug from title
+        function onTitleChange() {
+            const title = titleInput.value;
+            slugInput.value = title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+            saveToStorage();
+        }
+
+        // Editor change handler
+        function onEditorChange() {
+            render();
+            saveToStorage();
+            updateStats();
+        }
+
+        // Handle image paste - compress before inserting
+        function onEditorPaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (!file) return;
+
+                    showToast('Processing image...');
+
+                    // Use canvas to compress the image
+                    const img = new Image();
+                    const reader = new FileReader();
+
+                    reader.onload = (event) => {
+                        img.onload = () => {
+                            // Resize to max 800px width/height
+                            const MAX_SIZE = 800;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > MAX_SIZE || height > MAX_SIZE) {
+                                if (width > height) {
+                                    height = (height / width) * MAX_SIZE;
+                                    width = MAX_SIZE;
+                                } else {
+                                    width = (width / height) * MAX_SIZE;
+                                    height = MAX_SIZE;
+                                }
+                            }
+
+                            // Create canvas and compress
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            // Convert to compressed JPEG
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                            const cursorPos = editor.selectionStart;
+                            const before = editor.value.substring(0, cursorPos);
+                            const after = editor.value.substring(editor.selectionEnd);
+                            const imageMarkdown = `![pasted image](${compressedBase64})`;
+
+                            editor.value = before + imageMarkdown + after;
+                            editor.selectionStart = editor.selectionEnd = cursorPos + imageMarkdown.length;
+
+                            onEditorChange();
+                            showToast('Image pasted! (compressed)');
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        }
+
+        // Update word count
+        function updateStats() {
+            const text = editor.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            stats.textContent = `${words} words`;
+        }
+
+        // Render markdown preview
+        function render() {
+            preview.innerHTML = marked.parse(editor.value || '');
+        }
+
+        // Handle text selection in preview
+        function onPreviewSelect(e) {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+
+            if (text && text.length > 2) {
+                selectedText = text;
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                selectionPopup.style.display = 'block';
+                selectionPopup.style.top = (rect.top - 40) + 'px';
+                selectionPopup.style.left = rect.left + 'px';
+            }
+        }
+
+        // Hide popup
+        function hidePopup(e) {
+            if (!selectionPopup.contains(e.target)) {
+                selectionPopup.style.display = 'none';
+            }
+        }
+
+        // Open note modal
+        function openNoteModal() {
+            selectionPopup.style.display = 'none';
+            noteAnchor.value = selectedText;
+            noteText.value = '';
+            noteModal.style.display = 'flex';
+            noteText.focus();
+        }
+
+        // Close note modal
+        function closeNoteModal() {
+            noteModal.style.display = 'none';
+            selectedText = '';
+        }
+
+        // Save note
+        function saveNote() {
+            const anchor = noteAnchor.value.trim();
+            const text = noteText.value.trim();
+            const side = document.querySelector('input[name="note-side"]:checked').value;
+
+            if (anchor && text) {
+                notes.push({
+                    id: String(notes.length + 1),
+                    anchor: anchor,
+                    note: text,
+                    side: side
+                });
+                renderNotes();
+                saveToStorage();
+                closeNoteModal();
+            }
+        }
+
+        // Delete note
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            // Re-number notes
+            notes.forEach((n, i) => n.id = String(i + 1));
+            renderNotes();
+            saveToStorage();
+        }
+
+        // Render notes list
+        function renderNotes() {
+            if (notes.length === 0) {
+                notesList.innerHTML = '<div class="empty-notes">Select text in preview, then add a note</div>';
+            } else {
+                notesList.innerHTML = notes.map((note, i) => `
+                    <div class="note-item">
+                        <span class="note-anchor">"${escapeHtml(note.anchor.substring(0, 20))}${note.anchor.length > 20 ? '...' : ''}"</span>
+                        <span class="note-text">${escapeHtml(note.note)}</span>
+                        <span style="color: var(--accent); font-size: 0.7rem;">${note.side === 'right' ? '→' : '←'}</span>
+                        <span class="note-delete" onclick="deleteNote(${i})">×</span>
+                    </div>
+                `).join('');
+            }
+            noteCount.textContent = notes.length;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Copy JSON (no file download)
+        function copyJson() {
+            const post = {
+                id: slugInput.value || 'untitled',
+                title: titleInput.value || 'Untitled',
+                date: dateInput.value,
+                content: editor.value,
+                sideNotes: notes
+            };
+
+            const json = JSON.stringify(post, null, 2);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(json).then(() => {
+                showToast('JSON copied! Paste into a new file in src/content/posts/');
+            });
+        }
+
+        // Show toast
+        function showToast(message) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // Clear all
+        function clearAll() {
+            if (confirm('Start a new post? Current work will be saved in browser.')) {
+                editor.value = '';
+                titleInput.value = '';
+                slugInput.value = '';
+                notes = [];
+                dateInput.value = new Date().toISOString().split('T')[0];
+                render();
+                renderNotes();
+                updateStats();
+                localStorage.removeItem('caffeine-writer');
+            }
+        }
+
+        // Save to localStorage
+        function saveToStorage() {
+            const data = {
+                title: titleInput.value,
+                slug: slugInput.value,
+                date: dateInput.value,
+                content: editor.value,
+                notes: notes
+            };
+            localStorage.setItem('caffeine-writer', JSON.stringify(data));
+        }
+
+        // Load from localStorage
+        function loadFromStorage() {
+            const saved = localStorage.getItem('caffeine-writer');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    titleInput.value = data.title || '';
+                    slugInput.value = data.slug || '';
+                    dateInput.value = data.date || new Date().toISOString().split('T')[0];
+                    editor.value = data.content || '';
+                    notes = data.notes || [];
+                    renderNotes();
+                    updateStats();
+                } catch (e) {
+                    console.error('Failed to load saved data');
+                }
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+
+</html>
