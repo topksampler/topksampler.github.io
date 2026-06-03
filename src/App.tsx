@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import HomePage from './components/HomePage';
 import ReadingPage from './components/ReadingPage';
@@ -7,9 +7,17 @@ import { loadPosts, Post } from './utils/contentLoader';
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   // Initialize posts from the loader
   const [posts] = useState<Post[]>(loadPosts());
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
+  const routePostId = location.pathname.startsWith('/post/')
+    ? decodeURIComponent(location.pathname.replace('/post/', '').split('/')[0])
+    : null;
+  const activePost = routePostId
+    ? posts.find(p => p.id === routePostId) || null
+    : selectedPost;
 
   const handlePostClick = (postId: string) => {
     const post = posts.find(p => p.id === postId);
@@ -68,11 +76,11 @@ function App() {
         <Route
           path="/post/:postId"
           element={
-            selectedPost ? (
+            activePost ? (
               <ReadingPage
-                post={selectedPost}
-                prevPost={getAdjacentPosts(selectedPost.id).prev}
-                nextPost={getAdjacentPosts(selectedPost.id).next}
+                post={activePost}
+                prevPost={getAdjacentPosts(activePost.id).prev}
+                nextPost={getAdjacentPosts(activePost.id).next}
                 onBack={handleBack}
                 onNavigate={handleNavigate}
               />

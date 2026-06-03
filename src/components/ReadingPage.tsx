@@ -29,6 +29,23 @@ interface ReadingPageProps {
     onNavigate: (postId: string) => void;
 }
 
+type MarkdownCodeProps = React.HTMLAttributes<HTMLElement> & {
+    inline?: boolean;
+    className?: string;
+    children?: React.ReactNode;
+};
+
+type MarkdownBlockquoteProps = React.BlockquoteHTMLAttributes<HTMLQuoteElement> & {
+    children?: React.ReactNode;
+};
+
+const normalizeNoteMatchText = (value: string) =>
+    value
+        .toLowerCase()
+        .replace(/[`*_~>#()[\]{}|]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
 // Split content into sections and match notes to sections
 const useSectionsWithNotes = (content: string, sideNotes?: SideNote[]) => {
     return useMemo(() => {
@@ -36,9 +53,11 @@ const useSectionsWithNotes = (content: string, sideNotes?: SideNote[]) => {
         const sections = content.split(/(?=^## )/gm).filter(s => s.trim());
 
         return sections.map((section, index) => {
+            const normalizedSection = normalizeNoteMatchText(section);
+
             // Find notes that belong to this section (anchor text appears in section)
             const matchingNotes = sideNotes?.filter(note =>
-                section.toLowerCase().includes(note.anchor.toLowerCase())
+                normalizedSection.includes(normalizeNoteMatchText(note.anchor))
             ) || [];
 
             return {
@@ -84,7 +103,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     const sectionsWithNotes = useSectionsWithNotes(post.content, post.sideNotes);
 
     const markdownComponents = {
-        code({ node, inline, className, children, ...props }: any) {
+        code({ inline, className, children, ...props }: MarkdownCodeProps) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
                 <div className="code-block">
@@ -95,7 +114,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                         style={atomDark}
                         language={match[1]}
                         PreTag="div"
-                        {...props}
                     >
                         {String(children).replace(/\n$/, '')}
                     </SyntaxHighlighter>
@@ -106,9 +124,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                 </code>
             );
         },
-        blockquote({ children }: any) {
+        blockquote({ children, ...props }: MarkdownBlockquoteProps) {
             return (
-                <blockquote className="styled-quote">
+                <blockquote className="styled-quote" {...props}>
                     {children}
                 </blockquote>
             );

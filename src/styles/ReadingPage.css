@@ -7,6 +7,12 @@
     position: relative;
 }
 
+.reading-page *,
+.reading-page *::before,
+.reading-page *::after {
+    box-sizing: border-box;
+}
+
 .noise-overlay {
     position: fixed;
     top: 0;
@@ -180,6 +186,10 @@
     font-size: 1rem;
     line-height: 1.9;
     color: var(--color-gray-300);
+    width: 100%;
+    max-width: 650px;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 .markdown-body p {
@@ -234,6 +244,18 @@
 
 .markdown-body li {
     margin-bottom: 0.75rem;
+}
+
+.markdown-body pre {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.markdown-body pre code {
+    display: block;
+    min-width: max-content;
 }
 
 .markdown-body strong {
@@ -471,6 +493,8 @@
 
 /* Section notes - mobile only */
 .content-section {
+    width: 100%;
+    min-width: 0;
     margin-bottom: 1rem;
 }
 
@@ -541,10 +565,22 @@
 @media (max-width: 768px) {
     .reading-header {
         padding: 1.5rem;
+        gap: 1rem;
     }
 
     .mini-logo {
         font-size: clamp(0.15rem, 0.6vw, 0.25rem);
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .back-btn,
+    .reading-date {
+        flex: 0 0 auto;
+    }
+
+    .reading-date {
+        text-align: right;
     }
 
     .reading-layout {
@@ -557,6 +593,11 @@
 
     .markdown-body {
         font-size: 0.95rem;
+    }
+
+    .mobile-content {
+        width: 100%;
+        max-width: 100%;
     }
 
     .reading-footer {
@@ -595,6 +636,7 @@
 @media (max-width: 480px) {
     .reading-header {
         padding: 1rem;
+        gap: 0.75rem;
     }
 
     .reading-layout {
@@ -611,5 +653,9 @@
 
     .note-item {
         font-size: 0.8rem;
+    }
+
+    .section-notes {
+        padding: 0.9rem 1rem;
     }
 }

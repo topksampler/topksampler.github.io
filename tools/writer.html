@@ -50,6 +50,8 @@
         .actions {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         button {
@@ -77,6 +79,12 @@
         button.primary:hover {
             background: transparent;
             color: var(--accent);
+        }
+
+        button.small {
+            font-size: 0.7rem;
+            padding: 0.35rem 0.7rem;
+            letter-spacing: 1px;
         }
 
         /* Main Layout */
@@ -218,6 +226,48 @@
             top: 0;
         }
 
+        .notes-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .note-ideas {
+            display: none;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .note-ideas.visible {
+            display: block;
+        }
+
+        .idea-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1rem;
+            padding: 0.9rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .idea-meta {
+            color: var(--accent);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+
+        .idea-text {
+            color: var(--text);
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .idea-add {
+            align-self: start;
+        }
+
         .notes-list {
             padding: 0;
         }
@@ -344,6 +394,33 @@
             resize: vertical;
         }
 
+        .anchor-status,
+        .note-context {
+            margin-top: 0.5rem;
+            font-size: 0.72rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .anchor-status.ok {
+            color: var(--accent);
+        }
+
+        .anchor-status.warn {
+            color: #ffd166;
+        }
+
+        .anchor-status.error {
+            color: #ff6b6b;
+        }
+
+        .note-starters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
         .modal .position-selector {
             display: flex;
             gap: 2rem;
@@ -406,6 +483,52 @@
             display: none;
             z-index: 3000;
         }
+
+        @media (max-width: 900px) {
+            header,
+            .metadata {
+                padding: 1rem;
+            }
+
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                min-height: 45vh;
+            }
+
+            .metadata {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 560px) {
+            header {
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .actions {
+                gap: 0.5rem;
+            }
+
+            button {
+                padding: 0.5rem 0.8rem;
+            }
+
+            .idea-item,
+            .note-item {
+                grid-template-columns: 1fr;
+            }
+
+            .note-item {
+                display: grid;
+                gap: 0.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -447,8 +570,12 @@ Select text in the preview to add margin notes."></textarea>
             <div class="notes-section">
                 <div class="notes-header">
                     <span>Margin Notes</span>
-                    <span id="note-count">0</span>
+                    <div class="notes-header-actions">
+                        <button class="small" onclick="generateNoteIdeas()">Suggest</button>
+                        <span id="note-count">0</span>
+                    </div>
                 </div>
+                <div class="note-ideas" id="note-ideas"></div>
                 <div class="notes-list" id="notes-list">
                     <div class="empty-notes">Select text in preview, then add a note</div>
                 </div>
@@ -464,9 +591,17 @@ Select text in the preview to add margin notes."></textarea>
         <div class="modal">
             <h3>Add Margin Note</h3>
             <label>Anchor Text</label>
-            <input type="text" id="note-anchor" readonly>
+            <input type="text" id="note-anchor">
+            <div class="anchor-status" id="anchor-status"></div>
+            <div class="note-context" id="note-context"></div>
             <label>Your Note</label>
             <textarea id="note-text" placeholder="Write your annotation..."></textarea>
+            <div class="note-starters">
+                <button class="small" onclick="applyNoteStarter('why')">Why</button>
+                <button class="small" onclick="applyNoteStarter('question')">Question</button>
+                <button class="small" onclick="applyNoteStarter('connection')">Connection</button>
+                <button class="small" onclick="applyNoteStarter('counter')">Counter</button>
+            </div>
             <label>Position</label>
             <div class="position-selector">
                 <div class="position-option">
@@ -492,6 +627,8 @@ Select text in the preview to add margin notes."></textarea>
         // State
         let notes = [];
         let selectedText = '';
+        let selectedContext = null;
+        let noteIdeas = [];
 
         // Elements
         const editor = document.getElementById('editor');
@@ -500,22 +637,28 @@ Select text in the preview to add margin notes."></textarea>
         const slugInput = document.getElementById('slug');
         const dateInput = document.getElementById('date');
         const notesList = document.getElementById('notes-list');
+        const noteIdeasPanel = document.getElementById('note-ideas');
         const noteCount = document.getElementById('note-count');
         const selectionPopup = document.getElementById('selection-popup');
         const noteModal = document.getElementById('note-modal');
         const noteAnchor = document.getElementById('note-anchor');
         const noteText = document.getElementById('note-text');
+        const anchorStatus = document.getElementById('anchor-status');
+        const noteContext = document.getElementById('note-context');
         const stats = document.getElementById('stats');
         const toast = document.getElementById('toast');
 
         // Initialize
         function init() {
             loadFromStorage();
-            dateInput.value = new Date().toISOString().split('T')[0];
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
             editor.addEventListener('input', onEditorChange);
             editor.addEventListener('paste', onEditorPaste);
             titleInput.addEventListener('input', onTitleChange);
             preview.addEventListener('mouseup', onPreviewSelect);
+            noteAnchor.addEventListener('input', updateAnchorStatus);
             document.addEventListener('mousedown', hidePopup);
             render();
         }
@@ -537,6 +680,8 @@ Select text in the preview to add margin notes."></textarea>
             render();
             saveToStorage();
             updateStats();
+            noteIdeas = [];
+            renderNoteIdeas();
         }
 
         // Handle image paste - compress before inserting
@@ -621,12 +766,13 @@ Select text in the preview to add margin notes."></textarea>
 
             if (text && text.length > 2) {
                 selectedText = text;
+                selectedContext = getContextForAnchor(text);
                 const range = selection.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
 
                 selectionPopup.style.display = 'block';
-                selectionPopup.style.top = (rect.top - 40) + 'px';
-                selectionPopup.style.left = rect.left + 'px';
+                selectionPopup.style.top = Math.max(12, rect.top - 44) + 'px';
+                selectionPopup.style.left = Math.max(12, Math.min(rect.left, window.innerWidth - 150)) + 'px';
             }
         }
 
@@ -642,7 +788,11 @@ Select text in the preview to add margin notes."></textarea>
             selectionPopup.style.display = 'none';
             noteAnchor.value = selectedText;
             noteText.value = '';
+            noteText.placeholder = selectedContext?.starter || 'Write your annotation...';
+            setSuggestedSide();
+            renderNoteContext();
             noteModal.style.display = 'flex';
+            updateAnchorStatus();
             noteText.focus();
         }
 
@@ -650,6 +800,10 @@ Select text in the preview to add margin notes."></textarea>
         function closeNoteModal() {
             noteModal.style.display = 'none';
             selectedText = '';
+            selectedContext = null;
+            anchorStatus.textContent = '';
+            anchorStatus.className = 'anchor-status';
+            noteContext.textContent = '';
         }
 
         // Save note
@@ -657,18 +811,323 @@ Select text in the preview to add margin notes."></textarea>
             const anchor = noteAnchor.value.trim();
             const text = noteText.value.trim();
             const side = document.querySelector('input[name="note-side"]:checked').value;
+            const matchInfo = getAnchorMatchInfo(anchor);
 
-            if (anchor && text) {
-                notes.push({
-                    id: String(notes.length + 1),
-                    anchor: anchor,
-                    note: text,
-                    side: side
-                });
-                renderNotes();
-                saveToStorage();
-                closeNoteModal();
+            if (!anchor || !text) {
+                showToast('Anchor and note are required');
+                return;
             }
+
+            if (matchInfo.count !== 1) {
+                updateAnchorStatus();
+                showToast(matchInfo.count === 0 ? 'Anchor not found in markdown' : 'Anchor matches more than one section');
+                return;
+            }
+
+            if (notes.some((note) => normalizeAnchor(note.anchor) === normalizeAnchor(anchor))) {
+                showToast('That anchor already has a note');
+                return;
+            }
+
+            notes.push({
+                id: getNextNoteId(),
+                anchor: anchor,
+                note: text,
+                side: side
+            });
+            noteIdeas = noteIdeas.filter((idea) => normalizeAnchor(idea.anchor) !== normalizeAnchor(anchor));
+            renderNoteIdeas();
+            renderNotes();
+            saveToStorage();
+            closeNoteModal();
+        }
+
+        function normalizeAnchor(value) {
+            return (value || '')
+                .toLowerCase()
+                .replace(/[`*_~>#\[\](){}|]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function markdownToPlain(value) {
+            return (value || '')
+                .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+                .replace(/^\s{0,3}>\s?/gm, '')
+                .replace(/^\s*(?:[-*+]\s+|\d+\.\s+)/gm, '')
+                .replace(/[`*_~]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function splitMarkdownSections() {
+            const sections = [];
+            let current = { title: 'Opening', content: '' };
+
+            editor.value.split('\n').forEach((line) => {
+                const heading = line.match(/^##\s+(.+)/);
+                if (heading) {
+                    if (current.content.trim()) {
+                        sections.push(current);
+                    }
+                    current = {
+                        title: markdownToPlain(heading[1]) || 'Untitled section',
+                        content: `${line}\n`
+                    };
+                } else {
+                    current.content += `${line}\n`;
+                }
+            });
+
+            if (current.content.trim()) {
+                sections.push(current);
+            }
+
+            return sections;
+        }
+
+        function getAnchorMatchInfo(anchor) {
+            const normalizedAnchor = normalizeAnchor(anchor);
+
+            if (!normalizedAnchor) {
+                return { count: 0, matches: [] };
+            }
+
+            const matches = splitMarkdownSections().filter((section) =>
+                normalizeAnchor(section.content).includes(normalizedAnchor)
+            );
+
+            return {
+                count: matches.length,
+                matches
+            };
+        }
+
+        function getContextForAnchor(anchor) {
+            const matchInfo = getAnchorMatchInfo(anchor);
+            const section = matchInfo.matches[0];
+
+            if (!section) {
+                return null;
+            }
+
+            return {
+                section: section.title,
+                starter: `Why this matters: ${anchor.slice(0, 90)}${anchor.length > 90 ? '...' : ''}`
+            };
+        }
+
+        function updateAnchorStatus() {
+            const anchor = noteAnchor.value.trim();
+            const matchInfo = getAnchorMatchInfo(anchor);
+
+            anchorStatus.className = 'anchor-status';
+
+            if (!anchor) {
+                anchorStatus.textContent = '';
+                return matchInfo;
+            }
+
+            if (matchInfo.count === 0) {
+                anchorStatus.classList.add('error');
+                anchorStatus.textContent = 'No source match. Select or edit text that appears in the markdown.';
+            } else if (matchInfo.count > 1) {
+                anchorStatus.classList.add('warn');
+                anchorStatus.textContent = `Ambiguous anchor. Matches ${matchInfo.count} sections; choose a longer phrase.`;
+            } else {
+                anchorStatus.classList.add('ok');
+                anchorStatus.textContent = `Matches section: ${matchInfo.matches[0].title}`;
+            }
+
+            return matchInfo;
+        }
+
+        function renderNoteContext() {
+            if (!selectedContext) {
+                noteContext.textContent = '';
+                return;
+            }
+
+            noteContext.textContent = `Context: ${selectedContext.section}`;
+        }
+
+        function setSuggestedSide() {
+            const leftCount = notes.filter((note) => note.side === 'left').length;
+            const rightCount = notes.filter((note) => note.side === 'right').length;
+            const side = leftCount <= rightCount ? 'left' : 'right';
+            document.querySelector(`input[name="note-side"][value="${side}"]`).checked = true;
+        }
+
+        function applyNoteStarter(type) {
+            const starters = {
+                why: 'why this matters: ',
+                question: 'question to chase: ',
+                connection: 'connection: ',
+                counter: 'counterpoint: '
+            };
+            const starter = starters[type] || '';
+
+            if (!starter) return;
+
+            if (noteText.value.trim()) {
+                noteText.value = `${noteText.value.trim()}\n${starter}`;
+            } else {
+                noteText.value = starter;
+            }
+
+            noteText.focus();
+            noteText.selectionStart = noteText.selectionEnd = noteText.value.length;
+        }
+
+        function getNextNoteId() {
+            const highest = notes.reduce((max, note) => {
+                const parsed = Number.parseInt(note.id, 10);
+                return Number.isFinite(parsed) ? Math.max(max, parsed) : max;
+            }, 0);
+
+            return String(highest + 1);
+        }
+
+        function getContentBlocks() {
+            const blocks = [];
+            const lines = editor.value.split('\n');
+            let section = 'Opening';
+            let buffer = [];
+            let inCode = false;
+            let blockIndex = 0;
+
+            const flush = () => {
+                const raw = buffer.join('\n').trim();
+                buffer = [];
+
+                if (!raw) return;
+
+                const plain = markdownToPlain(raw);
+                if (plain.length < 35) return;
+
+                blocks.push({
+                    raw,
+                    plain,
+                    section,
+                    index: blockIndex
+                });
+                blockIndex += 1;
+            };
+
+            lines.forEach((line) => {
+                if (/^\s*```/.test(line)) {
+                    flush();
+                    inCode = !inCode;
+                    return;
+                }
+
+                if (inCode) return;
+
+                const heading = line.match(/^##\s+(.+)/);
+                if (heading) {
+                    flush();
+                    section = markdownToPlain(heading[1]) || 'Untitled section';
+                    return;
+                }
+
+                if (!line.trim()) {
+                    flush();
+                    return;
+                }
+
+                if (/^\s*(?:[-*+]\s+|\d+\.\s+)/.test(line)) {
+                    flush();
+                    buffer.push(line);
+                    flush();
+                    return;
+                }
+
+                buffer.push(line);
+            });
+
+            flush();
+            return blocks;
+        }
+
+        function trimAnchor(plain) {
+            const sentenceMatch = plain.match(/^(.{60,220}?[.!?])(?:\s|$)/);
+            const source = sentenceMatch ? sentenceMatch[1] : plain;
+
+            if (source.length <= 220) {
+                return source.trim();
+            }
+
+            return source.slice(0, 220).replace(/\s+\S*$/, '').trim();
+        }
+
+        function scoreIdea(block) {
+            let score = 0;
+            const text = block.plain;
+
+            if (text.length >= 70 && text.length <= 240) score += 3;
+            if (text.length >= 45 && text.length < 70) score += 1;
+            if (/[?!]/.test(text)) score += 2;
+            if (/(because|but|however|therefore|means|realize|imagine|think|why|how|what|if|not as|the way)/i.test(text)) score += 2;
+            if (/"[^"]+"/.test(text)) score += 1;
+            if (block.index === 0) score += 1;
+            if (notes.some((note) => normalizeAnchor(note.anchor) === normalizeAnchor(trimAnchor(text)))) score -= 6;
+
+            return score;
+        }
+
+        function generateNoteIdeas() {
+            const seen = new Set();
+
+            noteIdeas = getContentBlocks()
+                .map((block) => ({
+                    anchor: trimAnchor(block.plain),
+                    section: block.section,
+                    score: scoreIdea(block)
+                }))
+                .filter((idea) => {
+                    const key = normalizeAnchor(idea.anchor);
+                    if (idea.score < 3 || key.length < 35 || seen.has(key)) return false;
+                    seen.add(key);
+                    return getAnchorMatchInfo(idea.anchor).count === 1;
+                })
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 8);
+
+            renderNoteIdeas();
+            showToast(noteIdeas.length ? 'Anchor suggestions ready' : 'No strong anchors found yet');
+        }
+
+        function renderNoteIdeas() {
+            if (!noteIdeas.length) {
+                noteIdeasPanel.classList.remove('visible');
+                noteIdeasPanel.innerHTML = '';
+                return;
+            }
+
+            noteIdeasPanel.classList.add('visible');
+            noteIdeasPanel.innerHTML = noteIdeas.map((idea, index) => `
+                <div class="idea-item">
+                    <div>
+                        <div class="idea-meta">${escapeHtml(idea.section)}</div>
+                        <div class="idea-text">${escapeHtml(idea.anchor)}</div>
+                    </div>
+                    <button class="small idea-add" onclick="useNoteIdea(${index})">Add</button>
+                </div>
+            `).join('');
+        }
+
+        function useNoteIdea(index) {
+            const idea = noteIdeas[index];
+            if (!idea) return;
+
+            selectedText = idea.anchor;
+            selectedContext = {
+                section: idea.section,
+                starter: `Why this matters: ${idea.anchor.slice(0, 90)}${idea.anchor.length > 90 ? '...' : ''}`
+            };
+            openNoteModal();
         }
 
         // Delete note
@@ -733,7 +1192,7 @@ Select text in the preview to add margin notes."></textarea>
 
         // Clear all
         function clearAll() {
-            if (confirm('Start a new post? Current work will be saved in browser.')) {
+            if (confirm('Start a new post? Current local draft will be cleared.')) {
                 editor.value = '';
                 titleInput.value = '';
                 slugInput.value = '';

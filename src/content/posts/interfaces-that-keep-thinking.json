@@ -1,0 +1,38 @@
+{
+  "id": "interfaces-that-keep-thinking",
+  "title": "Interfaces That Keep Thinking",
+  "date": "2026-06-03",
+  "content": "## Interfaces That Keep Thinking\n\nA useful tool is not a vending machine for output. It is a surface that keeps the next decision visible. When the surface is good, the writer can see where the argument is thin, where a phrase is doing too much work, and where a note deserves to live beside the paragraph instead of below it.\n\n> the best tools do not finish your thought; they keep your thought inspectable.\n\nThat is the bar I want for tiny personal software: it should hold context, expose friction, and refuse silent failure.\n\n## Anchors Before Notes\n\nMargin notes only work when the anchor is stable. If the note points at text that later disappears, the note becomes decoration with no contract. A note generator should therefore do three things before it celebrates: find a unique anchor, show the section it belongs to, and warn when a phrase is too vague.\n\nA repeatable checkpoint phrase belongs here so the tool can prove it knows when a short anchor is ambiguous.\n\nThe writer should ask for better anchors before it saves broken annotations. That small refusal is useful because it protects the published reading experience.\n\n## Suggestion Is Not Authorship\n\nSuggestions are best when they behave like a careful editor. They should point at sentences that already carry tension: a claim, a reversal, a question, or a definition. They should not invent footnotes for every paragraph. Scarcity makes each side note feel intentional.\n\nThe same repeatable checkpoint phrase appears here, which means a lazy note anchored to only that phrase should be rejected as ambiguous.\n\nA good suggestion is a door handle. It tells the writer: \"this is where a reader may want a little more context.\"\n\n## The Small Contract\n\nThe contract is simple:\n\n1. the editor keeps the draft fast.\n2. the preview shows what readers will actually see.\n3. the margin-note tool validates anchors before export.\n4. the exported JSON renders without a cleanup pass.\n\nIf that loop holds, publishing feels less like formatting and more like thinking in public.\n\n```text\ndraft -> preview -> anchored note -> JSON -> rendered essay\n```\n\nThe tool does not need to be clever everywhere. It just needs to be stubborn at the places where a broken note would become invisible later.\n",
+  "sideNotes": [
+    {
+      "id": "1",
+      "anchor": "A useful tool is not a vending machine for output.",
+      "note": "The writer is judged by whether it keeps the next editorial decision visible.",
+      "side": "left"
+    },
+    {
+      "id": "2",
+      "anchor": "Margin notes only work when the anchor is stable.",
+      "note": "This is the old footnote failure mode: a note could export even when the reader page would never place it.",
+      "side": "right"
+    },
+    {
+      "id": "3",
+      "anchor": "The writer should ask for better anchors before it saves broken annotations.",
+      "note": "A small refusal here is better than silent failure in the published essay.",
+      "side": "left"
+    },
+    {
+      "id": "4",
+      "anchor": "Suggestions are best when they behave like a careful editor.",
+      "note": "The suggestion list now favors sentences with claims, tension, questions, or definitions instead of every paragraph.",
+      "side": "right"
+    },
+    {
+      "id": "5",
+      "anchor": "the exported JSON renders without a cleanup pass.",
+      "note": "This is the practical publishing contract: the tool output should be ready for the site immediately.",
+      "side": "right"
+    }
+  ]
+}
