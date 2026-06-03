@@ -313,7 +313,8 @@
             gap: 1rem;
         }
 
-        .metadata input {
+        .metadata input,
+        .post-tools select {
             flex: 1;
             padding: 0.5rem;
             background: transparent;
@@ -323,9 +324,52 @@
             font-size: 0.85rem;
         }
 
-        .metadata input:focus {
+        .metadata input:focus,
+        .post-tools select:focus {
             outline: none;
             border-color: var(--accent);
+        }
+
+        .post-tools {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .post-tools select {
+            min-width: 0;
+        }
+
+        .post-tools option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .publish-status {
+            padding: 0.6rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.75rem;
+            display: none;
+        }
+
+        .publish-status.visible {
+            display: block;
+        }
+
+        .publish-status.ok {
+            color: var(--accent);
+        }
+
+        .publish-status.warn {
+            color: #ffd166;
+        }
+
+        .publish-status.error {
+            color: #ff6b6b;
         }
 
         /* Selection popup */
@@ -503,6 +547,10 @@
             .metadata {
                 flex-direction: column;
             }
+
+            .post-tools {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 560px) {
@@ -539,6 +587,7 @@ WRITER</pre>
         <div class="actions">
             <button onclick="clearAll()">New</button>
             <button onclick="saveToStorage(); showToast('Saved to browser storage!');">Save</button>
+            <button class="primary" onclick="publishPost()">Publish</button>
             <button class="primary" onclick="copyJson()">Copy JSON</button>
         </div>
     </header>
@@ -548,6 +597,16 @@ WRITER</pre>
         <input type="text" id="slug" placeholder="url-slug (auto-generated)">
         <input type="date" id="date">
     </div>
+
+    <div class="post-tools">
+        <select id="existing-posts" aria-label="Existing posts">
+            <option value="">Loading existing articles...</option>
+        </select>
+        <button onclick="loadSelectedPost()">Load</button>
+        <button onclick="refreshPostList()">Refresh</button>
+    </div>
+
+    <div class="publish-status" id="publish-status"></div>
 
     <main>
         <div class="panel editor-panel">
@@ -629,6 +688,8 @@ Select text in the preview to add margin notes."></textarea>
         let selectedText = '';
         let selectedContext = null;
         let noteIdeas = [];
+        let postIndex = [];
+        let currentPostId = '';
 
         // Elements
         const editor = document.getElementById('editor');
@@ -647,6 +708,8 @@ Select text in the preview to add margin notes."></textarea>
         const noteContext = document.getElementById('note-context');
         const stats = document.getElementById('stats');
         const toast = document.getElementById('toast');
+        const existingPosts = document.getElementById('existing-posts');
+        const publishStatus = document.getElementById('publish-status');
 
         // Initialize
         function init() {
@@ -661,17 +724,22 @@ Select text in the preview to add margin notes."></textarea>
             noteAnchor.addEventListener('input', updateAnchorStatus);
             document.addEventListener('mousedown', hidePopup);
             render();
+            refreshPostList();
         }
 
-        // Auto-generate slug from title
-        function onTitleChange() {
-            const title = titleInput.value;
-            slugInput.value = title
+        function slugify(value) {
+            return value
                 .toLowerCase()
                 .replace(/[^a-z0-9\s-]/g, '')
                 .replace(/\s+/g, '-')
                 .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '')
                 .trim();
+        }
+
+        // Auto-generate slug from title
+        function onTitleChange() {
+            slugInput.value = slugify(titleInput.value);
             saveToStorage();
         }
 
@@ -757,6 +825,65 @@ Select text in the preview to add margin notes."></textarea>
         // Render markdown preview
         function render() {
             preview.innerHTML = marked.parse(editor.value || '');
+        }
+
+        function setPublishStatus(message, tone = '') {
+            publishStatus.textContent = message;
+            publishStatus.className = `publish-status visible ${tone}`.trim();
+        }
+
+        function clearPublishStatus() {
+            publishStatus.textContent = '';
+            publishStatus.className = 'publish-status';
+        }
+
+        function buildPost() {
+            const id = slugify(slugInput.value || titleInput.value || 'untitled');
+
+            return {
+                id: id || 'untitled',
+                title: titleInput.value.trim() || 'Untitled',
+                date: dateInput.value,
+                content: editor.value,
+                sideNotes: notes.map((note, index) => ({
+                    id: String(index + 1),
+                    anchor: note.anchor.trim(),
+                    note: note.note.trim(),
+                    side: note.side === 'left' ? 'left' : 'right'
+                }))
+            };
+        }
+
+        function validateDraftForPublish(post) {
+            const errors = [];
+            const seenAnchors = new Set();
+
+            if (!post.title.trim()) errors.push('Add a title.');
+            if (!post.id || post.id === 'untitled') errors.push('Add a real URL slug.');
+            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.id)) errors.push('Slug must use lowercase letters, numbers, and single hyphens.');
+            if (!post.date) errors.push('Add a publish date.');
+            if (!post.content.trim()) errors.push('Write the article content.');
+
+            post.sideNotes.forEach((note) => {
+                const normalized = normalizeAnchor(note.anchor);
+                const matchInfo = getAnchorMatchInfo(note.anchor);
+
+                if (!note.anchor || !note.note) {
+                    errors.push(`Note ${note.id} needs both anchor text and note text.`);
+                }
+
+                if (seenAnchors.has(normalized)) {
+                    errors.push(`Note ${note.id} reuses an anchor that already has a note.`);
+                }
+
+                if (matchInfo.count !== 1) {
+                    errors.push(`Note ${note.id} anchor must match exactly one section; currently matches ${matchInfo.count}.`);
+                }
+
+                seenAnchors.add(normalized);
+            });
+
+            return errors;
         }
 
         // Handle text selection in preview
@@ -1163,21 +1290,147 @@ Select text in the preview to add margin notes."></textarea>
             return div.innerHTML;
         }
 
+        function renderPostOptions() {
+            if (!postIndex.length) {
+                existingPosts.innerHTML = '<option value="">No existing articles found</option>';
+                return;
+            }
+
+            existingPosts.innerHTML = [
+                '<option value="">Select existing article...</option>',
+                ...postIndex.map((post) => `
+                    <option value="${escapeHtml(post.id)}" ${post.id === currentPostId ? 'selected' : ''}>
+                        ${escapeHtml(post.date || 'undated')} · ${escapeHtml(post.title)}
+                    </option>
+                `)
+            ].join('');
+        }
+
+        async function refreshPostList() {
+            try {
+                const response = await fetch('/api/writer/posts');
+
+                if (!response.ok) {
+                    throw new Error('Writer API unavailable');
+                }
+
+                const data = await response.json();
+                postIndex = data.posts || [];
+                renderPostOptions();
+            } catch (error) {
+                postIndex = [];
+                existingPosts.innerHTML = '<option value="">Run npm dev to load articles</option>';
+                setPublishStatus('Editing and publishing existing articles requires the local Vite dev server.', 'warn');
+            }
+        }
+
+        function hasDraftContent() {
+            return Boolean(
+                titleInput.value.trim() ||
+                slugInput.value.trim() ||
+                editor.value.trim() ||
+                notes.length
+            );
+        }
+
+        function setDraftFromPost(post) {
+            currentPostId = post.id;
+            titleInput.value = post.title || '';
+            slugInput.value = post.id || '';
+            dateInput.value = post.date || new Date().toISOString().split('T')[0];
+            editor.value = post.content || '';
+            notes = (post.sideNotes || []).map((note, index) => ({
+                id: String(index + 1),
+                anchor: note.anchor || '',
+                note: note.note || '',
+                side: note.side === 'left' ? 'left' : 'right'
+            }));
+            noteIdeas = [];
+            render();
+            renderNotes();
+            renderNoteIdeas();
+            updateStats();
+            saveToStorage();
+            clearPublishStatus();
+            renderPostOptions();
+        }
+
+        async function loadSelectedPost() {
+            const id = existingPosts.value;
+
+            if (!id) {
+                showToast('Select an article to load');
+                return;
+            }
+
+            if (hasDraftContent() && currentPostId !== id && !confirm('Load this article? Unsaved local draft changes will be replaced.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/writer/posts/${encodeURIComponent(id)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load article');
+                }
+
+                setDraftFromPost(data.post);
+                showToast(`Loaded ${data.post.title}`);
+            } catch (error) {
+                setPublishStatus(error instanceof Error ? error.message : 'Failed to load article.', 'error');
+            }
+        }
+
+        async function publishPost() {
+            const post = buildPost();
+            const errors = validateDraftForPublish(post);
+
+            if (errors.length) {
+                setPublishStatus(errors[0], 'error');
+                showToast('Fix publish errors first');
+                return;
+            }
+
+            if (currentPostId && currentPostId !== post.id && !confirm(`Publish as ${post.id}.json? The previously loaded file ${currentPostId}.json will remain.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/writer/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(post)
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Publish failed');
+                }
+
+                currentPostId = data.post.id;
+                slugInput.value = data.post.id;
+                notes = data.post.sideNotes || [];
+                renderNotes();
+                saveToStorage();
+                await refreshPostList();
+                setPublishStatus(`Published ${data.path}. View at ${data.url}.`, 'ok');
+                showToast('Published to src/content/posts');
+            } catch (error) {
+                setPublishStatus(error instanceof Error ? error.message : 'Publish failed. Run npm dev and try again.', 'error');
+            }
+        }
+
         // Copy JSON (no file download)
         function copyJson() {
-            const post = {
-                id: slugInput.value || 'untitled',
-                title: titleInput.value || 'Untitled',
-                date: dateInput.value,
-                content: editor.value,
-                sideNotes: notes
-            };
-
+            const post = buildPost();
             const json = JSON.stringify(post, null, 2);
 
             // Copy to clipboard
             navigator.clipboard.writeText(json).then(() => {
-                showToast('JSON copied! Paste into a new file in src/content/posts/');
+                showToast('JSON copied. Use Publish to write the file directly.');
             });
         }
 
@@ -1197,10 +1450,15 @@ Select text in the preview to add margin notes."></textarea>
                 titleInput.value = '';
                 slugInput.value = '';
                 notes = [];
+                noteIdeas = [];
+                currentPostId = '';
                 dateInput.value = new Date().toISOString().split('T')[0];
                 render();
                 renderNotes();
+                renderNoteIdeas();
                 updateStats();
+                clearPublishStatus();
+                renderPostOptions();
                 localStorage.removeItem('caffeine-writer');
             }
         }
@@ -1212,7 +1470,8 @@ Select text in the preview to add margin notes."></textarea>
                 slug: slugInput.value,
                 date: dateInput.value,
                 content: editor.value,
-                notes: notes
+                notes: notes,
+                currentPostId: currentPostId
             };
             localStorage.setItem('caffeine-writer', JSON.stringify(data));
         }
@@ -1228,8 +1487,10 @@ Select text in the preview to add margin notes."></textarea>
                     dateInput.value = data.date || new Date().toISOString().split('T')[0];
                     editor.value = data.content || '';
                     notes = data.notes || [];
+                    currentPostId = data.currentPostId || data.slug || '';
                     renderNotes();
                     updateStats();
+                    setPublishStatus('Loaded browser draft. Use Load to refresh from the file on disk before publishing.', 'warn');
                 } catch (e) {
                     console.error('Failed to load saved data');
                 }
