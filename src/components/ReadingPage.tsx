@@ -5,21 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import '../styles/ReadingPage.css';
-
-interface Post {
-    id: string;
-    title: string;
-    date: string;
-    content: string;
-    sideNotes?: SideNote[];
-}
-
-interface SideNote {
-    id: string;
-    anchor: string;
-    note: string;
-    side?: 'left' | 'right';
-}
+import type { Post, SideNote } from '../utils/contentLoader';
 
 interface ReadingPageProps {
     post: Post;

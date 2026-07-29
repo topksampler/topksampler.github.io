@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
+import AboutPage from './components/AboutPage';
 import HomePage from './components/HomePage';
 import ReadingPage from './components/ReadingPage';
 import { loadPosts, Post } from './utils/contentLoader';
@@ -32,6 +33,11 @@ function App() {
     navigate('/');
   };
 
+  const handleAboutClick = () => {
+    navigate('/about');
+    window.scrollTo(0, 0);
+  };
+
   const handleNavigate = (postId: string) => {
     const post = posts.find(p => p.id === postId);
     if (post) {
@@ -42,10 +48,18 @@ function App() {
   };
 
   const getAdjacentPosts = (currentId: string) => {
-    const currentIndex = posts.findIndex(p => p.id === currentId);
+    const currentPost = posts.find(p => p.id === currentId);
+
+    if (!currentPost) {
+      return { prev: null, next: null };
+    }
+
+    const categoryPosts = posts.filter(p => p.category === currentPost.category);
+    const currentIndex = categoryPosts.findIndex(p => p.id === currentId);
+
     return {
-      prev: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null,
-      next: currentIndex > 0 ? posts[currentIndex - 1] : null
+      prev: currentIndex < categoryPosts.length - 1 ? categoryPosts[currentIndex + 1] : null,
+      next: currentIndex > 0 ? categoryPosts[currentIndex - 1] : null
     };
   };
 
@@ -70,8 +84,13 @@ function App() {
             <HomePage
               posts={posts}
               onPostClick={handlePostClick}
+              onAboutClick={handleAboutClick}
             />
           }
+        />
+        <Route
+          path="/about"
+          element={<AboutPage onBack={handleBack} />}
         />
         <Route
           path="/post/:postId"
@@ -88,6 +107,7 @@ function App() {
               <HomePage
                 posts={posts}
                 onPostClick={handlePostClick}
+                onAboutClick={handleAboutClick}
               />
             )
           }

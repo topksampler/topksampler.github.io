@@ -5,10 +5,13 @@ export interface SideNote {
   side?: 'left' | 'right';
 }
 
+export type PostCategory = 'philosophy' | 'technical';
+
 export interface Post {
   id: string;
   title: string;
   date: string;
+  category: PostCategory;
   content: string;
   sideNotes?: SideNote[];
 }
